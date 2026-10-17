@@ -36,6 +36,7 @@ const CORE_ASSETS = [
   './js/app.js',
   './js/tools.js',
   './js/constitution.js',
+  './js/journal-ux.js',
 
   './icons/web-app-manifest-192x192.png',
   './icons/web-app-manifest-512x512.png'
