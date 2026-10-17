@@ -12,7 +12,7 @@
   <meta name="robots" content="index,follow">
   <link rel="canonical" href="https://yf-yu.github.io/solar-terms-health/">
   
-  <!-- Open Graph (社群分享) -->
+  <!-- Open Graph  -->
   <meta property="og:type" content="website">
   <meta property="og:site_name" content="節氣養生">
   <meta property="og:title" content="節氣養生｜順時養生的每日指南">
@@ -194,14 +194,55 @@
       <div class="symptom-chip" onclick="this.classList.toggle('sel')">😞 心情差</div>
     </div>
     <textarea class="note-area" id="journal-note" rows="3" placeholder="今天有什麼想記下來的？（飲食、天氣、感受都可以）"></textarea>
-    <button class="save-journal-btn" onclick="saveJournal()">✓ 記錄今天</button>
+    <button type="button" class="save-journal-btn" onclick="saveJournal()">＋ 新增此刻紀錄</button>
   </div>
 
-  <div class="journal-history">
-    <div class="journal-history-label">過去紀錄</div>
-    <div id="journal-entries"></div>
+  
+<div class="journal-history">
+  <div class="journal-history-label">
+    我的觀察與歷史
   </div>
+
+  <!-- 七天自動統計 -->
+  <p
+    id="journal-insights"
+    aria-live="polite"
+    style="line-height:1.8;color:var(--muted)">
+  </p>
+
+  <!-- 備份功能 -->
+  <div style="display:flex;gap:10px;flex-wrap:wrap;margin:12px 0">
+
+    <button
+      type="button"
+      class="save-journal-btn"
+      onclick="exportJournal()">
+      匯出備份
+    </button>
+
+    <label
+      style="cursor:pointer;padding:12px;border:1px solid currentColor;border-radius:8px">
+      匯入備份
+
+      <input
+        type="file"
+        accept=".json,application/json"
+        onchange="importJournal(this)"
+        style="display:none">
+    </label>
+
+  </div>
+
+  <p style="font-size:12px;color:var(--muted)">
+    資料只存在這台裝置的瀏覽器中，
+    不會自動跨裝置同步。
+    建議定期匯出備份。
+  </p>
+
+  <!-- 歷史紀錄由 JavaScript 產生 -->
+  <div id="journal-entries"></div>
 </div>
+</div><!-- 結束 page-journal -->
 
 <!-- ═══════════════ 提醒工具 ═══════════════ -->
 <div id="page-tools" class="page" role="tabpanel" aria-labelledby="tab-tools">
