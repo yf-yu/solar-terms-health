@@ -1,6 +1,6 @@
 # 🌱 節氣養生 Solar Terms Health
 
-一個結閤中國傳統二十四節氣與中醫養生觀念的現代化 PWA
+一個結合傳統二十四節氣與中醫養生觀念的現代化小工具
 
 🔗 **立即體驗：** [https://yf-yu.github.io/solar-terms-health/](https://yf-yu.github.io/solar-terms-health/)
 
