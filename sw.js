@@ -1,137 +1,87 @@
 
-/* =========================================================
-   節氣養生｜Service Worker V3.2
-   功能：
-   1. 離線開啟網站
-   2. 有網路時優先取得最新程式
-   3. 清除舊版快取
-   4. 防止快取錯誤頁面
-   5. 不操作使用者的 localStorage
-   ========================================================= */
-
 'use strict';
 
-/* ── 版本設定 ── */
+const SW_VERSION = 'v3.3.0';
+const SW_CACHE_PREFIX = 'solar-terms-health-';
+const SW_CACHE = SW_CACHE_PREFIX + SW_VERSION;
 
-// 每次正式修改網站資源時，請更新版本號。
-// 例如：v3.2.1、v3.2.2。
-const VERSION = 'v3.2.0';
-
-const CACHE_PREFIX = 'solar-terms-health-';
-const CACHE_NAME = CACHE_PREFIX + VERSION;
-
-// 舊版專案使用過 solar-v5 等快取名稱。
-const LEGACY_CACHE_PREFIX = 'solar-';
-
-/* ── 必要離線資源 ── */
-
-const CORE_ASSETS = [
+const SW_CORE_FILES = [
   './',
   './index.html',
   './manifest.json',
-
   './css/style.css',
-
   './js/data.js',
   './js/app.js',
+  './js/journal-ux.js',
+  './js/pwa-update.js',
   './js/tools.js',
   './js/constitution.js',
-  './js/journal-ux.js',
-
   './icons/web-app-manifest-192x192.png',
-  './icons/web-app-manifest-512x512.png'
+  './icons/web-app-manifest-512x512.png',
+  './icons/apple-touch-icon.png',
+  './icons/favicon.ico'
 ];
 
-/* ── URL 工具 ── */
-
-function assetURL(path) {
+function swURL(path) {
   return new URL(path, self.registration.scope).href;
 }
 
-const OFFLINE_PAGE = assetURL('./index.html');
+const SW_OFFLINE_URL = swURL('./index.html');
 
-/* ── 安裝 Service Worker ── */
+/* ── 安裝：所有必要檔案成功後才完成 ── */
 
 self.addEventListener('install', event => {
   event.waitUntil((async () => {
-    const cache = await caches.open(CACHE_NAME);
+    const cache = await caches.open(SW_CACHE);
 
-    // 使用重新驗證模式取得新版必要資源。
-    // 任何必要檔案下載失敗，就不啟用不完整的新版本。
-    const requests = CORE_ASSETS.map(path => {
-      return new Request(assetURL(path), {
+    const requests = SW_CORE_FILES.map(path => {
+      return new Request(swURL(path), {
         cache: 'reload'
       });
     });
 
     await cache.addAll(requests);
 
-    // 必要資源全部快取成功，才進入等待啟用階段。
-    // 不在這裡強制 skipWaiting，避免使用中的頁面
-    // 突然切換 Service Worker 版本。
+    // 不呼叫 skipWaiting()。
+    // 等使用者按下「立即更新」再啟用。
   })());
 });
 
-/* ── 啟用與清理舊快取 ── */
+/* ── 啟用：清除本專案舊版快取 ── */
 
 self.addEventListener('activate', event => {
   event.waitUntil((async () => {
-    const keys = await caches.keys();
+    const names = await caches.keys();
+
+    const oldCaches = names.filter(name => {
+      const isOurCache =
+        name.startsWith(SW_CACHE_PREFIX) ||
+        /^solar-v\d/.test(name);
+
+      return isOurCache && name !== SW_CACHE;
+    });
 
     await Promise.all(
-      keys
-        .filter(key => {
-          const isOurCache =
-            key.startsWith(CACHE_PREFIX) ||
-            key.startsWith(LEGACY_CACHE_PREFIX);
-
-          return isOurCache && key !== CACHE_NAME;
-        })
-        .map(key => caches.delete(key))
+      oldCaches.map(name => caches.delete(name))
     );
 
     await self.clients.claim();
   })());
 });
 
-/* ── 判斷是否為網站內部資源 ── */
+/* ── 網站範圍判斷 ── */
 
-function isSameOrigin(request) {
+function swInsideApp(request) {
   const url = new URL(request.url);
-  return url.origin === self.location.origin;
-}
-
-function isInsideApp(request) {
-  const url = new URL(request.url);
+  const scope = new URL(self.registration.scope);
 
   return (
-    url.origin === self.location.origin &&
-    url.pathname.startsWith(
-      new URL(self.registration.scope).pathname
-    )
+    url.origin === scope.origin &&
+    url.pathname.startsWith(scope.pathname)
   );
 }
 
-/* ── 判斷是否為核心程式檔案 ── */
-
-function isCoreAsset(request) {
-  const requestedURL = new URL(request.url);
-
-  return CORE_ASSETS.some(path => {
-    const coreURL = new URL(
-      assetURL(path)
-    );
-
-    return (
-      coreURL.origin === requestedURL.origin &&
-      coreURL.pathname === requestedURL.pathname
-    );
-  });
-}
-
-/* ── 判斷回應是否適合快取 ── */
-
-function canCache(response) {
+function swCanCache(response) {
   return (
     response &&
     response.ok &&
@@ -139,67 +89,62 @@ function canCache(response) {
   );
 }
 
-/* ── 網路優先：適用 HTML / JS / CSS ── */
+/* ── 網路優先 ── */
 
-async function networkFirst(request) {
-  const cache = await caches.open(CACHE_NAME);
+async function swNetworkFirst(request) {
+  const cache = await caches.open(SW_CACHE);
 
   try {
     const response = await fetch(request);
 
     if (!response.ok) {
-      throw new Error(
-        'HTTP ' + response.status
-      );
+      throw new Error('HTTP ' + response.status);
     }
 
-    if (canCache(response)) {
-      await cache.put(
-        request,
-        response.clone()
-      );
+    if (swCanCache(response)) {
+      try {
+        await cache.put(request, response.clone());
+      } catch (error) {
+        console.warn('快取寫入失敗', error);
+      }
     }
 
     return response;
   } catch (error) {
-    const cached = await cache.match(request);
+    const cached = await cache.match(request, {
+      ignoreSearch: true
+    });
 
-    if (cached) {
-      return cached;
-    }
+    if (cached) return cached;
 
-    // 導覽頁面在離線時使用首頁。
     if (request.mode === 'navigate') {
-      const fallback = await cache.match(OFFLINE_PAGE);
+      const fallback = await cache.match(SW_OFFLINE_URL);
 
-      if (fallback) {
-        return fallback;
-      }
+      if (fallback) return fallback;
     }
 
     return Response.error();
   }
 }
 
-/* ── 快取優先：適用圖片等靜態資源 ── */
+/* ── 快取優先 ── */
 
-async function cacheFirst(request) {
-  const cache = await caches.open(CACHE_NAME);
+async function swCacheFirst(request) {
+  const cache = await caches.open(SW_CACHE);
 
   const cached = await cache.match(request);
 
-  if (cached) {
-    return cached;
-  }
+  if (cached) return cached;
 
   try {
     const response = await fetch(request);
 
-    if (canCache(response)) {
-      await cache.put(
-        request,
-        response.clone()
-      );
+    if (swCanCache(response)) {
+      try {
+        await cache.put(request, response.clone());
+      } catch (error) {
+        console.warn('圖片快取失敗', error);
+      }
     }
 
     return response;
@@ -208,58 +153,34 @@ async function cacheFirst(request) {
   }
 }
 
-/* ── 攔截網站請求 ── */
+/* ── 請求處理 ── */
 
 self.addEventListener('fetch', event => {
   const request = event.request;
 
-  // 只處理 GET，避免影響其他操作。
-  if (request.method !== 'GET') {
-    return;
-  }
-
-  // 外部字型、第三方服務交由瀏覽器處理。
-  if (!isSameOrigin(request)) {
-    return;
-  }
-
-  // 不干涉 GitHub Pages 同網域的其他專案。
-  if (!isInsideApp(request)) {
-    return;
-  }
+  if (request.method !== 'GET') return;
+  if (!swInsideApp(request)) return;
 
   const url = new URL(request.url);
 
-  // HTML 導覽一律網路優先。
   if (request.mode === 'navigate') {
-    event.respondWith(
-      networkFirst(request)
-    );
+    event.respondWith(swNetworkFirst(request));
     return;
   }
 
-  // JS、CSS、HTML、JSON 等重要程式資源
-  // 使用網路優先，避免長期停留在舊版。
   const isProgramFile =
-    /\.(?:js|css|html|json)$/i.test(url.pathname);
+    /\.(js|css|html|json)$/i.test(url.pathname);
 
-  if (isProgramFile || isCoreAsset(request)) {
-    event.respondWith(
-      networkFirst(request)
-    );
+  if (isProgramFile) {
+    event.respondWith(swNetworkFirst(request));
     return;
   }
 
-  // 其他同站資源（例如圖片）採快取優先。
-  event.respondWith(
-    cacheFirst(request)
-  );
+  event.respondWith(swCacheFirst(request));
 });
 
-/* ── 接收頁面傳來的更新指令 ── */
+/* ── 使用者確認後啟用新版 ── */
 
-// 預留給未來的「立即更新」按鈕。
-// 只有收到頁面明確指令時才強制啟用等待中的新版。
 self.addEventListener('message', event => {
   if (event.data?.type === 'SKIP_WAITING') {
     self.skipWaiting();
