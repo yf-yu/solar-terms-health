@@ -1,203 +1,234 @@
-:root{
-  --forest:#1C3D2E;--forest2:#2A5940;--moss:#3D7A52;--leaf:#5EAA72;
-  --earth:#6B4C2A;--sand:#C4A882;--cream:#F5EDD8;--warm:#FBF6EE;
-  --amber:#D4821A;--red:#C0392B;--sky:#3498DB;
-  --text:#1A2A1A;--muted:#5A6E5A;--hint:#8A9E8A;
-  --card:#FFFFFF;--bg:#F0EDE4;
-}
-*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-html,body{height:100%;font-family:'Noto Sans TC',sans-serif;background:var(--bg);color:var(--text);-webkit-tap-highlight-color:transparent}
+/* ════════════════════════════════════════
+   節氣養生 — 樣式表
+   RWD：200px → 桌機，全程使用 clamp() 自適應
+════════════════════════════════════════ */
 
-/* ── 底部導航 ── */
+:root{
+  --forest:#1C3D2E; --forest2:#2A5940; --moss:#3D7A52; --leaf:#5EAA72;
+  --earth:#6B4C2A; --sand:#C4A882; --cream:#F5EDD8; --warm:#FBF6EE;
+  --amber:#D4821A; --red:#C0392B; --sky:#3498DB; --green:#1A6035;
+  --text:#1A2A1A; --muted:#5A6E5A; --hint:#8A9E8A;
+  --card:#FFFFFF; --bg:#F0EDE4; --border:#E0DAD0;
+
+  /* RWD 流體間距 */
+  --gap-xs: clamp(4px, 1vw, 8px);
+  --gap-sm: clamp(8px, 1.5vw, 12px);
+  --gap-md: clamp(12px, 2vw, 16px);
+  --gap-lg: clamp(16px, 3vw, 24px);
+  --pad-page: clamp(12px, 4vw, 24px);
+  --radius-sm: clamp(8px, 1.5vw, 12px);
+  --radius-md: clamp(12px, 2vw, 16px);
+  --radius-lg: clamp(16px, 2.5vw, 20px);
+
+  /* RWD 流體字級 */
+  --fs-xxs: clamp(9px, 1.6vw, 11px);
+  --fs-xs:  clamp(10px, 1.8vw, 12px);
+  --fs-sm:  clamp(12px, 2vw, 13px);
+  --fs-md:  clamp(13px, 2.2vw, 15px);
+  --fs-lg:  clamp(15px, 2.5vw, 17px);
+  --fs-xl:  clamp(18px, 3vw, 22px);
+  --fs-2xl: clamp(22px, 4vw, 28px);
+  --fs-3xl: clamp(28px, 6vw, 40px);
+  --fs-hero: clamp(32px, 10vw, 56px);
+
+  --max-w: 480px;
+}
+
+*,*::before,*::after{ box-sizing:border-box; margin:0; padding:0; }
+html{ -webkit-text-size-adjust:100%; }
+html,body{ height:100%; }
+body{
+  font-family:'Noto Sans TC',sans-serif;
+  background:var(--bg);
+  color:var(--text);
+  -webkit-tap-highlight-color:transparent;
+  line-height:1.6;
+  overflow-x:hidden;
+}
+
+/* 無障礙 focus */
+:focus-visible{ outline:2px solid var(--amber); outline-offset:2px; border-radius:4px; }
+
+/* ════════ 底部導航 ════════ */
 .nav-bar{
-  position:fixed;bottom:0;left:0;right:0;z-index:100;
-  background:var(--forest);border-top:2px solid var(--forest2);
-  display:flex;padding-bottom:env(safe-area-inset-bottom);
+  position:fixed; bottom:0; left:0; right:0; z-index:100;
+  background:var(--forest);
+  border-top:2px solid var(--forest2);
+  display:flex;
+  padding-bottom:env(safe-area-inset-bottom);
+  max-width:var(--max-w);
+  margin:0 auto;
 }
 .nav-item{
-  flex:1;padding:10px 4px 8px;
-  display:flex;flex-direction:column;align-items:center;gap:3px;
-  background:none;border:none;color:rgba(255,255,255,.5);font-size:11px;
-  cursor:pointer;font-family:inherit;transition:color .15s;
+  flex:1; min-width:0;
+  padding:clamp(6px,1.5vw,10px) 2px clamp(5px,1.2vw,8px);
+  display:flex; flex-direction:column; align-items:center; gap:2px;
+  background:none; border:none;
+  color:rgba(255,255,255,.55);
+  font-size:clamp(9px,1.8vw,11px);
+  cursor:pointer; font-family:inherit;
+  transition:color .15s;
+  min-height:44px;
 }
-.nav-item.active{color:#fff}
-.nav-icon{font-size:20px;line-height:1}
+.nav-item.active{ color:#fff; }
+.nav-icon{ font-size:clamp(16px,3.5vw,22px); line-height:1; }
 
-/* ── 頁面 ── */
-.page{display:none;flex-direction:column;min-height:100vh;padding-bottom:72px}
-.page.active{display:flex}
+/* ════════ 頁面容器 ════════ */
+.page{
+  display:none;
+  flex-direction:column;
+  min-height:100vh;
+  padding-bottom:calc(64px + env(safe-area-inset-bottom));
+  max-width:var(--max-w);
+  margin:0 auto;
+  width:100%;
+}
+.page.active{ display:flex; }
 
-/* ── 節氣主頁頂部 ── */
+.page-header{
+  background:var(--forest);
+  padding:var(--gap-lg) var(--pad-page) var(--gap-md);
+}
+.page-title{
+  font-family:'Noto Serif TC',serif;
+  font-size:var(--fs-xl);
+  font-weight:900;
+  color:#fff;
+  letter-spacing:2px;
+  word-break:break-word;
+}
+.page-subtitle{
+  font-size:var(--fs-sm);
+  color:rgba(255,255,255,.65);
+  margin-top:4px;
+}
+
+/* ════════ 主頁 Hero ════════ */
 .solar-hero{
-  padding:0;position:relative;overflow:hidden;
-  min-height:260px;display:flex;flex-direction:column;justify-content:flex-end;
+  position:relative; overflow:hidden;
+  min-height:clamp(200px, 55vw, 280px);
+  display:flex; flex-direction:column; justify-content:flex-end;
 }
 .hero-bg{
-  position:absolute;inset:0;
+  position:absolute; inset:0;
   background:linear-gradient(160deg, var(--forest) 0%, var(--forest2) 50%, var(--moss) 100%);
 }
-/* 裝飾圓 */
-.hero-bg::before{content:'';position:absolute;top:-80px;right:-60px;width:280px;height:280px;border-radius:50%;background:rgba(255,255,255,.04)}
-.hero-bg::after{content:'';position:absolute;bottom:-40px;left:-30px;width:180px;height:180px;border-radius:50%;background:rgba(255,255,255,.03)}
-.hero-content{position:relative;z-index:1;padding:20px 20px 24px}
-.hero-date{font-size:13px;color:rgba(255,255,255,.6);letter-spacing:2px;margin-bottom:8px}
+.hero-bg::before,
+.hero-bg::after{
+  content:''; position:absolute; border-radius:50%;
+  background:rgba(255,255,255,.04);
+}
+.hero-bg::before{ top:-20%; right:-20%; width:60vw; max-width:280px; height:60vw; max-height:280px; }
+.hero-bg::after{ bottom:-10%; left:-10%; width:40vw; max-width:180px; height:40vw; max-height:180px; background:rgba(255,255,255,.03); }
+
+.hero-content{
+  position:relative; z-index:1;
+  padding:var(--gap-lg) var(--pad-page);
+}
+.hero-date{
+  font-size:var(--fs-sm);
+  color:rgba(255,255,255,.65);
+  letter-spacing:2px;
+  margin-bottom:6px;
+}
 .hero-solar-name{
   font-family:'Noto Serif TC',serif;
-  font-size:48px;font-weight:900;color:#fff;
-  letter-spacing:4px;margin-bottom:4px;
+  font-size:var(--fs-hero);
+  font-weight:900;
+  color:#fff;
+  letter-spacing:clamp(2px,1vw,4px);
+  margin-bottom:4px;
+  line-height:1.1;
   text-shadow:0 2px 12px rgba(0,0,0,.2);
+  word-break:break-word;
 }
-.hero-solar-en{font-size:13px;color:rgba(255,255,255,.5);letter-spacing:3px;margin-bottom:12px}
+.hero-solar-en{
+  font-size:var(--fs-sm);
+  color:rgba(255,255,255,.6);
+  letter-spacing:2px;
+  margin-bottom:10px;
+  text-transform:uppercase;
+}
 .hero-summary{
-  font-size:16px;color:rgba(255,255,255,.85);line-height:1.7;
-  max-width:320px;
+  font-size:var(--fs-md);
+  color:rgba(255,255,255,.88);
+  line-height:1.7;
+  max-width:100%;
 }
 .hero-days-badge{
-  display:inline-flex;align-items:center;gap:6px;
-  background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.2);
-  padding:6px 14px;border-radius:100px;
-  font-size:13px;color:rgba(255,255,255,.85);
+  display:inline-flex; align-items:center; gap:6px;
+  background:rgba(255,255,255,.12);
+  border:1px solid rgba(255,255,255,.22);
+  padding:5px 14px;
+  border-radius:100px;
+  font-size:var(--fs-sm);
+  color:rgba(255,255,255,.9);
   margin-top:12px;
+  flex-wrap:wrap;
 }
+
+/* 每日一句 */
+.daily-quote-wrap{
+  margin:var(--gap-md) var(--pad-page);
+  background:rgba(28,61,46,.06);
+  border:1px solid rgba(28,61,46,.15);
+  border-radius:var(--radius-md);
+  padding:var(--gap-md);
+}
+.daily-quote-label{
+  font-size:var(--fs-xxs);
+  color:var(--muted);
+  letter-spacing:2px;
+  margin-bottom:6px;
+}
+.daily-quote{
+  font-family:'Noto Serif TC',serif;
+  font-size:var(--fs-md);
+  color:var(--earth);
+  line-height:1.7;
+  font-style:italic;
+}
+
 /* 今日行動卡 */
 .today-actions{
-  padding:16px;
-  display:flex;flex-direction:column;gap:10px;
+  padding:0 var(--pad-page) var(--gap-md);
+  display:flex; flex-direction:column; gap:var(--gap-sm);
 }
 .action-card{
-  background:var(--card);border:1.5px solid #E0DAD0;border-radius:16px;
-  padding:16px;display:flex;gap:14px;align-items:flex-start;
+  background:var(--card);
+  border:1.5px solid var(--border);
+  border-radius:var(--radius-md);
+  padding:var(--gap-md);
+  display:flex; gap:var(--gap-sm); align-items:flex-start;
 }
-.action-icon{font-size:28px;flex-shrink:0;margin-top:2px}
-.action-info{}
-.action-cat{font-size:11px;font-weight:700;letter-spacing:2px;color:var(--muted);text-transform:uppercase;margin-bottom:4px}
-.action-title{font-size:16px;font-weight:700;color:var(--text);margin-bottom:4px}
-.action-desc{font-size:13px;color:var(--muted);line-height:1.7}
+.action-icon{ font-size:clamp(22px,5vw,28px); flex-shrink:0; margin-top:2px; }
+.action-info{ min-width:0; flex:1; }
+.action-cat{
+  font-size:var(--fs-xxs);
+  font-weight:700;
+  letter-spacing:2px;
+  color:var(--muted);
+  text-transform:uppercase;
+  margin-bottom:4px;
+}
+.action-title{
+  font-size:var(--fs-md);
+  font-weight:700;
+  color:var(--text);
+  margin-bottom:4px;
+}
+.action-desc{
+  font-size:var(--fs-sm);
+  color:var(--muted);
+  line-height:1.7;
+  word-break:break-word;
+}
 .action-tip{
-  margin-top:8px;padding:8px 12px;
-  background:var(--cream);border-radius:8px;
-  font-size:12px;color:var(--earth);line-height:1.6;
-  border-left:3px solid var(--sand);
-}
-
-/* ── 知識庫 ── */
-.solar-list{
-  display:grid;grid-template-columns:1fr 1fr;
-  gap:10px;padding:16px;
-}
-.solar-item{
-  background:var(--card);border:1.5px solid #E0DAD0;border-radius:14px;
-  padding:14px 12px;cursor:pointer;transition:all .15s;text-align:center;
-}
-.solar-item:active{transform:scale(.97)}
-.solar-item.current{border-color:var(--forest);background:var(--cream)}
-.solar-season-dot{width:8px;height:8px;border-radius:50%;margin:0 auto 8px;display:block}
-.dot-spring{background:#7EBE7E}.dot-summer{background:#E84040}.dot-autumn{background:#D4821A}.dot-winter{background:#3498DB}
-.solar-item-name{font-family:'Noto Serif TC',serif;font-size:17px;font-weight:900;color:var(--text)}
-.solar-item-date{font-size:11px;color:var(--muted);margin-top:3px}
-.solar-item-badge{display:inline-block;font-size:10px;padding:2px 8px;border-radius:100px;margin-top:4px;background:var(--forest);color:#fff}
-
-/* 節氣詳情 */
-.solar-detail{display:none;flex-direction:column;min-height:100vh;background:var(--bg);padding-bottom:20px}
-.solar-detail.open{display:flex}
-.detail-header{
-  background:var(--forest);padding:20px 20px 24px;
-  display:flex;align-items:center;gap:12px;
-}
-.detail-back{width:44px;height:44px;border-radius:50%;background:rgba(255,255,255,.15);display:flex;align-items:center;justify-content:center;color:#fff;font-size:20px;border:none;cursor:pointer;flex-shrink:0}
-.detail-name{font-family:'Noto Serif TC',serif;font-size:28px;font-weight:900;color:#fff;letter-spacing:3px}
-.detail-body{padding:16px}
-.detail-card{background:var(--card);border:1.5px solid #E0DAD0;border-radius:16px;padding:18px;margin-bottom:12px}
-.detail-card-title{font-size:14px;font-weight:700;color:var(--forest);margin-bottom:10px;display:flex;align-items:center;gap:6px}
-.detail-card-body{font-size:14px;color:var(--text);line-height:1.9}
-.detail-quote{
-  background:var(--cream);border-radius:10px;padding:14px 16px;margin-top:10px;
-  font-family:'Noto Serif TC',serif;font-size:14px;color:var(--earth);line-height:1.9;
-  border-left:3px solid var(--sand);font-style:italic;
-}
-.detail-quote cite{display:block;font-size:11px;color:var(--muted);margin-top:6px;font-style:normal}
-/* 穴位提示 */
-.acupoint-grid{display:flex;flex-direction:column;gap:10px;margin-top:4px}
-.acu-card{background:var(--cream);border-radius:12px;padding:14px 16px;border:1px solid var(--sand)}
-.acu-header{display:flex;align-items:center;gap:8px;margin-bottom:8px}
-.acu-icon{font-size:20px}
-.acu-symptom{font-size:14px;font-weight:700;color:var(--text)}
-.acu-name{font-size:13px;color:var(--forest);font-weight:700;margin-bottom:4px}
-.acu-location{font-size:12px;color:var(--muted);margin-bottom:6px;line-height:1.6}
-.acu-method{font-size:12px;color:var(--earth);line-height:1.7;border-top:1px solid var(--sand);padding-top:6px;margin-top:4px}
-.acu-disclaimer{font-size:11px;color:var(--hint);margin-top:8px;font-style:italic}
-/* 感知圖 */
-.symptom-chart{padding:16px;background:var(--card);border:1.5px solid #E0DAD0;border-radius:16px;margin-bottom:12px}
-.symptom-chart-title{font-size:14px;font-weight:700;color:var(--forest);margin-bottom:12px}
-.chart-grid{display:flex;flex-wrap:wrap;gap:6px}
-.chart-dot{
-  padding:6px 12px;border-radius:100px;font-size:12px;cursor:pointer;transition:all .15s;
-  background:var(--bg);border:1.5px solid var(--border);color:var(--muted);
-}
-.chart-dot.sel{background:var(--forest);color:#fff;border-color:var(--forest)}
-.chart-count{font-size:11px;color:var(--muted);margin-top:8px}
-
-/* ── 日誌頁 ── */
-.journal-today{
-  background:var(--forest);padding:20px;
-}
-.journal-today-title{font-size:16px;font-weight:700;color:rgba(255,255,255,.8);margin-bottom:12px}
-.journal-checks{display:flex;flex-direction:column;gap:8px}
-.check-row{
-  display:flex;align-items:center;gap:12px;
-  background:rgba(255,255,255,.08);border-radius:12px;padding:12px 14px;
-}
-.check-emoji{font-size:22px}
-.check-label{flex:1;font-size:15px;color:#fff}
-.check-toggle{width:44px;height:26px;border-radius:13px;background:rgba(255,255,255,.2);position:relative;border:none;cursor:pointer;transition:background .2s;flex-shrink:0}
-.check-toggle.on{background:var(--leaf)}
-.check-toggle::after{content:'';position:absolute;top:3px;left:3px;width:20px;height:20px;border-radius:50%;background:#fff;transition:transform .2s;box-shadow:0 1px 3px rgba(0,0,0,.2)}
-.check-toggle.on::after{transform:translateX(18px)}
-.symptom-area{padding:16px}
-.symptom-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:12px}
-.symptom-chip{
-  padding:10px 8px;border-radius:12px;text-align:center;
-  background:var(--card);border:1.5px solid #E0DAD0;
-  font-size:13px;color:var(--muted);cursor:pointer;transition:all .15s;
-}
-.symptom-chip.sel{background:var(--cream);border-color:var(--amber);color:var(--earth)}
-.note-area{
-  width:100%;padding:12px 14px;
-  background:var(--card);border:1.5px solid #E0DAD0;border-radius:12px;
-  font-size:15px;color:var(--text);line-height:1.7;resize:none;outline:none;
-  font-family:inherit;
-}
-.note-area:focus{border-color:var(--forest)}
-.save-journal-btn{
-  width:100%;padding:14px;margin-top:12px;
-  background:var(--forest);color:#fff;border:none;border-radius:14px;
-  font-size:16px;font-weight:700;cursor:pointer;font-family:inherit;
-  transition:opacity .15s;
-}
-.save-journal-btn:active{opacity:.8}
-/* 日誌歷史 */
-.journal-history{padding:0 16px 16px}
-.journal-entry{
-  background:var(--card);border:1.5px solid #E0DAD0;border-radius:14px;
-  padding:14px;margin-bottom:8px;
-}
-.entry-date{font-size:12px;color:var(--muted);margin-bottom:6px}
-.entry-solar{font-size:13px;font-weight:700;color:var(--forest);margin-bottom:6px}
-.entry-checks{display:flex;flex-wrap:wrap;gap:4px;margin-bottom:6px}
-.entry-check{padding:2px 8px;border-radius:100px;font-size:11px;background:var(--cream);color:var(--earth)}
-.entry-symptoms{font-size:12px;color:var(--muted)}
-.entry-note{font-size:13px;color:var(--text);margin-top:6px;line-height:1.6;border-top:1px solid #F0EAE0;padding-top:6px}
-
-/* ── Toast ── */
-#toast{
-  position:fixed;bottom:80px;left:50%;
-  transform:translateX(-50%) translateY(60px);
-  background:var(--forest);color:#fff;
-  padding:11px 22px;border-radius:100px;
-  font-size:14px;z-index:9999;transition:transform .3s;pointer-events:none;
-}
-
-@media(min-width:480px){
-  .page{max-width:480px;margin:0 auto}
-  .nav-bar{max-width:480px;left:50%;transform:translateX(-50%)}
-}
+  margin-top:8px;
+  padding:8px 12px;
+  background:var(--cream);
+  border-radius:var(--radius-sm);
+  font-size:var(--fs-xs);
+  color:var(--earth);
+  line-height:1.6;
+  border-left:3px solid var
