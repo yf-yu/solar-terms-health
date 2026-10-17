@@ -1,7 +1,7 @@
 
 'use strict';
 
-const SW_VERSION = 'v3.3.0';
+const SW_VERSION = 'v3.4.0';
 const SW_CACHE_PREFIX = 'solar-terms-health-';
 const SW_CACHE = SW_CACHE_PREFIX + SW_VERSION;
 
