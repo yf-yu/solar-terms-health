@@ -1,47 +1,20 @@
-const CACHE = 'solar-v4'; 
-const ASSETS = [
-  './',
-  './index.html',
-  './manifest.json',
-  './css/style.css',
-  './js/data.js',
-  './js/app.js',
-  './js/tools.js',
-  './js/constitution.js',
-  './icons/web-app-manifest-192x192.png', 
-  './icons/web-app-manifest-512x512.png', 
-  './icons/apple-touch-icon.png',
-  './icons/favicon.ico',
-  './icons/og-1200x630.png',
-  'https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@400;700;900&family=Noto+Sans+TC:wght@300;400;500;700&display=swap'
-];
-
-self.addEventListener('install', e => {
-  e.waitUntil(caches.open(CACHE).then(c => c.addAll(ASSETS)).catch(err => console.warn('cache add failed', err)));
-  self.skipWaiting();
+const CACHE = 'solar-v5';
+const ASSETS = ['./','./index.html','./manifest.json','./css/style.css','./js/data.js','./js/app.js','./js/tools.js','./js/constitution.js','./icons/web-app-manifest-192x192.png','./icons/web-app-manifest-512x512.png'];
+self.addEventListener('install', event => {
+  event.waitUntil(caches.open(CACHE).then(cache => cache.addAll(ASSETS)).then(() => self.skipWaiting()));
 });
-
-self.addEventListener('activate', e => {
-  e.waitUntil(
-    caches.keys().then(keys =>
-      Promise.all(keys.filter(k => k !== CACHE).map(k => caches.delete(k)))
-    )
-  );
-  self.clients.claim();
+self.addEventListener('activate', event => {
+  event.waitUntil(Promise.all([caches.keys().then(keys => Promise.all(keys.filter(key => key.startsWith('solar-') && key !== CACHE).map(key => caches.delete(key)))), self.clients.claim()]));
 });
-
-self.addEventListener('fetch', e => {
-  if (e.request.method !== 'GET') return;
-  e.respondWith(
-    caches.match(e.request).then(cached => {
-      if (cached) return cached;
-      return fetch(e.request).then(res => {
-        if (res && res.ok && (res.type === 'basic' || res.type === 'cors')) {
-          const clone = res.clone();
-          caches.open(CACHE).then(c => c.put(e.request, clone));
-        }
-        return res;
-      }).catch(() => caches.match('./index.html'));
-    })
-  );
+self.addEventListener('fetch', event => {
+  const request = event.request;
+  if (request.method !== 'GET' || new URL(request.url).origin !== self.location.origin) return;
+  if (request.mode === 'navigate') {
+    event.respondWith(fetch(request).catch(() => caches.match('./index.html')));
+    return;
+  }
+  event.respondWith(caches.match(request).then(cached => cached || fetch(request).then(response => {
+    if (response.ok) { const copy = response.clone(); event.waitUntil(caches.open(CACHE).then(cache => cache.put(request, copy))); }
+    return response;
+  })));
 });
