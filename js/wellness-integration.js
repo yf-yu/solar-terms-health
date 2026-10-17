@@ -1,5 +1,5 @@
 
-/* 節氣養生 V3.5｜日誌、補填、習慣同步、健康資訊安全
+/* 節氣養生 V3.5.1｜日誌、補填、習慣同步、健康資訊安全
    必須在 app.js、journal-ux.js、tools.js、constitution.js 之後載入。
 */
 'use strict';
@@ -303,62 +303,6 @@
      三、體質問卷結果同步到個人日誌
      ============================================ */
 
-  const CONSENT_KEY = 'st_const_journal_optin';
-
-  function initConstConsent() {
-    const intro = $('const-intro');
-
-    if (!intro || $('v35-const-consent')) return;
-
-    const panel = document.createElement('div');
-    panel.className = 'v35-box';
-
-    panel.innerHTML = `
-      <label>
-        <input
-          id="v35-const-consent"
-          type="checkbox">
-
-        將之後完成的體質傾向問卷結果，
-        同步加入個人日誌
-      </label>
-
-      <p class="v35-help">
-        預設不勾選。
-        問卷僅供生活觀察，
-        不能判斷疾病或取代中醫師診察。
-      </p>
-
-      <button
-        id="v35-import-old-const"
-        type="button">
-        將最近一次舊問卷結果加入日誌
-      </button>
-    `;
-
-    intro.appendChild(panel);
-
-    const checkbox = $('v35-const-consent');
-
-    checkbox.checked =
-      localStorage.getItem(CONSENT_KEY) === 'yes';
-
-    checkbox.addEventListener('change', () => {
-      try {
-        localStorage.setItem(
-          CONSENT_KEY,
-          checkbox.checked ? 'yes' : 'no'
-        );
-      } catch {
-        checkbox.checked = false;
-        alert('無法儲存同步偏好。');
-      }
-    });
-
-    $('v35-import-old-const')
-      .addEventListener('click', importLastConstitution);
-  }
-
   function constitutionEntry(result) {
     const main = window.CONSTITUTIONS?.[result.main];
 
@@ -430,74 +374,112 @@
     }
   }
 
-  if (typeof saveConstResult === 'function') {
-    const originalSaveConst = saveConstResult;
-
-    saveConstResult = function(...args) {
-      originalSaveConst.apply(this, args);
-
-      if (
-        localStorage.getItem(CONSENT_KEY) !== 'yes'
-      ) {
-        return;
-      }
-
-      const result = read('st_constitution');
-
-      if (
-        result &&
-        addConstitutionToJournal(result)
-      ) {
-        notify('✓ 問卷結果已同步至日誌');
-      }
-    };
-  }
-
   /* ============================================
-     四、問卷後的生活觀察建議
+     四、問卷後：生活建議與手動加入日誌
      ============================================ */
 
   if (typeof showConstResult === 'function') {
     const originalShowResult = showConstResult;
 
-    showConstResult = function(...args) {
-      const result = originalShowResult.apply(this, args);
-
+    showConstResult = function(
+      mainKey,
+      secondaryKeys,
+      shouldSave = true
+    ) {
+      const result = originalShowResult.apply(this, arguments);
       const host = $('const-result');
 
-      if (host) {
-        const tips = document.createElement('section');
-        tips.className = 'v35-box';
-
-        tips.innerHTML = `
-          <strong>🌱 可以實際做的生活觀察</strong>
-
-          <ul>
-            <li>
-              接下來 7 天，每天選一個固定時段
-              記下精神、睡眠或感受。
-            </li>
-
-            <li>
-              在「提醒工具」勾選日常習慣，
-              再到「個人日誌」補充當時的感受。
-            </li>
-
-            <li>
-              一週後回顧紀錄，
-              觀察生活節奏，
-              不以問卷結果自行診斷或治療。
-            </li>
-          </ul>
-
-          <p class="v35-help">
-            若症狀持續、加重或影響生活，
-            請尋求合格醫療專業人員評估。
-          </p>
-        `;
-
-        host.appendChild(tips);
+      if (
+        !host ||
+        !window.CONSTITUTIONS?.[mainKey]
+      ) {
+        return result;
       }
+
+      const stored = read('st_constitution');
+
+      const matched =
+        stored &&
+        stored.main === mainKey &&
+        JSON.stringify(stored.secondary || []) ===
+          JSON.stringify(secondaryKeys || []);
+
+      const current = {
+        main: mainKey,
+        secondary: Array.isArray(secondaryKeys)
+          ? [...secondaryKeys]
+          : [],
+        timestamp:
+          matched && Number.isFinite(stored.timestamp)
+            ? stored.timestamp
+            : Date.now()
+      };
+
+      const entry = constitutionEntry(current);
+
+      const panel = document.createElement('section');
+      panel.className = 'v35-box';
+
+      const heading = document.createElement('strong');
+      heading.textContent = '🌱 接下來可以怎麼做？';
+
+      const tips = document.createElement('ul');
+
+      [
+        '接下來 7 天，每天記錄睡眠、精神或身體感受。',
+        '在提醒工具記錄習慣，再回到日誌觀察變化。',
+        '如果不適持續或加重，請尋求合格醫療人員協助。'
+      ].forEach(t => {
+        const li = document.createElement('li');
+        li.textContent = t;
+        tips.appendChild(li);
+      });
+
+      const question = document.createElement('p');
+      question.textContent = '📖 想保留這次問卷結果嗎？';
+
+      const description = document.createElement('p');
+      description.className = 'v35-help';
+      description.textContent =
+        '由你主動決定是否加入個人日誌。' +
+        '問卷並非醫療診斷。';
+
+      const button = document.createElement('button');
+      button.type = 'button';
+      button.textContent = '＋ 加入我的養生日誌';
+
+      if (
+        entry &&
+        journalData.some(e => e.id === entry.id)
+      ) {
+        button.textContent = '✓ 已存在於日誌';
+        button.disabled = true;
+      }
+
+      button.addEventListener('click', () => {
+        if (!entry) {
+          return alert('問卷結果無法加入日誌。');
+        }
+
+        if (journalData.some(e => e.id === entry.id)) {
+          button.textContent = '✓ 已存在於日誌';
+          button.disabled = true;
+        } else if (addEntry(entry)) {
+          button.textContent = '✓ 已加入我的養生日誌';
+          button.disabled = true;
+          notify('✓ 已加入日誌');
+        }
+      });
+
+      panel.append(
+        heading,
+        tips,
+        question,
+        description,
+        button
+      );
+
+      host.appendChild(panel);
 
       return result;
     };
@@ -623,7 +605,6 @@
   function init() {
     initStyle();
     initBackfill();
-    initConstConsent();
     initSafety();
     syncJournalChecks();
 
@@ -634,7 +615,10 @@
   }
 
   if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', init);
+    document.addEventListener(
+      'DOMContentLoaded',
+      init
+    );
   } else {
     init();
   }
