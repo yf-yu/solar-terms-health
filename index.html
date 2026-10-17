@@ -1,0 +1,1487 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#1C3D2E">
+<title>節氣養生</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@400;700;900&family=Noto+Sans+TC:wght@300;400;500;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --forest:#1C3D2E;--forest2:#2A5940;--moss:#3D7A52;--leaf:#5EAA72;
+  --earth:#6B4C2A;--sand:#C4A882;--cream:#F5EDD8;--warm:#FBF6EE;
+  --amber:#D4821A;--red:#C0392B;--sky:#3498DB;
+  --text:#1A2A1A;--muted:#5A6E5A;--hint:#8A9E8A;
+  --card:#FFFFFF;--bg:#F0EDE4;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;font-family:'Noto Sans TC',sans-serif;background:var(--bg);color:var(--text);-webkit-tap-highlight-color:transparent}
+
+/* ── 底部導航 ── */
+.nav-bar{
+  position:fixed;bottom:0;left:0;right:0;z-index:100;
+  background:var(--forest);border-top:2px solid var(--forest2);
+  display:flex;padding-bottom:env(safe-area-inset-bottom);
+}
+.nav-item{
+  flex:1;padding:10px 4px 8px;
+  display:flex;flex-direction:column;align-items:center;gap:3px;
+  background:none;border:none;color:rgba(255,255,255,.5);font-size:11px;
+  cursor:pointer;font-family:inherit;transition:color .15s;
+}
+.nav-item.active{color:#fff}
+.nav-icon{font-size:20px;line-height:1}
+
+/* ── 頁面 ── */
+.page{display:none;flex-direction:column;min-height:100vh;padding-bottom:72px}
+.page.active{display:flex}
+
+/* ── 節氣主頁頂部 ── */
+.solar-hero{
+  padding:0;position:relative;overflow:hidden;
+  min-height:260px;display:flex;flex-direction:column;justify-content:flex-end;
+}
+.hero-bg{
+  position:absolute;inset:0;
+  background:linear-gradient(160deg, var(--forest) 0%, var(--forest2) 50%, var(--moss) 100%);
+}
+/* 裝飾圓 */
+.hero-bg::before{content:'';position:absolute;top:-80px;right:-60px;width:280px;height:280px;border-radius:50%;background:rgba(255,255,255,.04)}
+.hero-bg::after{content:'';position:absolute;bottom:-40px;left:-30px;width:180px;height:180px;border-radius:50%;background:rgba(255,255,255,.03)}
+.hero-content{position:relative;z-index:1;padding:20px 20px 24px}
+.hero-date{font-size:13px;color:rgba(255,255,255,.6);letter-spacing:2px;margin-bottom:8px}
+.hero-solar-name{
+  font-family:'Noto Serif TC',serif;
+  font-size:48px;font-weight:900;color:#fff;
+  letter-spacing:4px;margin-bottom:4px;
+  text-shadow:0 2px 12px rgba(0,0,0,.2);
+}
+.hero-solar-en{font-size:13px;color:rgba(255,255,255,.5);letter-spacing:3px;margin-bottom:12px}
+.hero-summary{
+  font-size:16px;color:rgba(255,255,255,.85);line-height:1.7;
+  max-width:320px;
+}
+.hero-days-badge{
+  display:inline-flex;align-items:center;gap:6px;
+  background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.2);
+  padding:6px 14px;border-radius:100px;
+  font-size:13px;color:rgba(255,255,255,.85);
+  margin-top:12px;
+}
+/* 今日行動卡 */
+.today-actions{
+  padding:16px;
+  display:flex;flex-direction:column;gap:10px;
+}
+.action-card{
+  background:var(--card);border:1.5px solid #E0DAD0;border-radius:16px;
+  padding:16px;display:flex;gap:14px;align-items:flex-start;
+}
+.action-icon{font-size:28px;flex-shrink:0;margin-top:2px}
+.action-info{}
+.action-cat{font-size:11px;font-weight:700;letter-spacing:2px;color:var(--muted);text-transform:uppercase;margin-bottom:4px}
+.action-title{font-size:16px;font-weight:700;color:var(--text);margin-bottom:4px}
+.action-desc{font-size:13px;color:var(--muted);line-height:1.7}
+.action-tip{
+  margin-top:8px;padding:8px 12px;
+  background:var(--cream);border-radius:8px;
+  font-size:12px;color:var(--earth);line-height:1.6;
+  border-left:3px solid var(--sand);
+}
+
+/* ── 知識庫 ── */
+.solar-list{
+  display:grid;grid-template-columns:1fr 1fr;
+  gap:10px;padding:16px;
+}
+.solar-item{
+  background:var(--card);border:1.5px solid #E0DAD0;border-radius:14px;
+  padding:14px 12px;cursor:pointer;transition:all .15s;text-align:center;
+}
+.solar-item:active{transform:scale(.97)}
+.solar-item.current{border-color:var(--forest);background:var(--cream)}
+.solar-season-dot{width:8px;height:8px;border-radius:50%;margin:0 auto 8px;display:block}
+.dot-spring{background:#7EBE7E}.dot-summer{background:#E84040}.dot-autumn{background:#D4821A}.dot-winter{background:#3498DB}
+.solar-item-name{font-family:'Noto Serif TC',serif;font-size:17px;font-weight:900;color:var(--text)}
+.solar-item-date{font-size:11px;color:var(--muted);margin-top:3px}
+.solar-item-badge{display:inline-block;font-size:10px;padding:2px 8px;border-radius:100px;margin-top:4px;background:var(--forest);color:#fff}
+
+/* 節氣詳情 */
+.solar-detail{display:none;flex-direction:column;min-height:100vh;background:var(--bg);padding-bottom:20px}
+.solar-detail.open{display:flex}
+.detail-header{
+  background:var(--forest);padding:20px 20px 24px;
+  display:flex;align-items:center;gap:12px;
+}
+.detail-back{width:44px;height:44px;border-radius:50%;background:rgba(255,255,255,.15);display:flex;align-items:center;justify-content:center;color:#fff;font-size:20px;border:none;cursor:pointer;flex-shrink:0}
+.detail-name{font-family:'Noto Serif TC',serif;font-size:28px;font-weight:900;color:#fff;letter-spacing:3px}
+.detail-body{padding:16px}
+.detail-card{background:var(--card);border:1.5px solid #E0DAD0;border-radius:16px;padding:18px;margin-bottom:12px}
+.detail-card-title{font-size:14px;font-weight:700;color:var(--forest);margin-bottom:10px;display:flex;align-items:center;gap:6px}
+.detail-card-body{font-size:14px;color:var(--text);line-height:1.9}
+.detail-quote{
+  background:var(--cream);border-radius:10px;padding:14px 16px;margin-top:10px;
+  font-family:'Noto Serif TC',serif;font-size:14px;color:var(--earth);line-height:1.9;
+  border-left:3px solid var(--sand);font-style:italic;
+}
+.detail-quote cite{display:block;font-size:11px;color:var(--muted);margin-top:6px;font-style:normal}
+/* 穴位提示 */
+.acupoint-grid{display:flex;flex-direction:column;gap:10px;margin-top:4px}
+.acu-card{background:var(--cream);border-radius:12px;padding:14px 16px;border:1px solid var(--sand)}
+.acu-header{display:flex;align-items:center;gap:8px;margin-bottom:8px}
+.acu-icon{font-size:20px}
+.acu-symptom{font-size:14px;font-weight:700;color:var(--text)}
+.acu-name{font-size:13px;color:var(--forest);font-weight:700;margin-bottom:4px}
+.acu-location{font-size:12px;color:var(--muted);margin-bottom:6px;line-height:1.6}
+.acu-method{font-size:12px;color:var(--earth);line-height:1.7;border-top:1px solid var(--sand);padding-top:6px;margin-top:4px}
+.acu-disclaimer{font-size:11px;color:var(--hint);margin-top:8px;font-style:italic}
+/* 感知圖 */
+.symptom-chart{padding:16px;background:var(--card);border:1.5px solid #E0DAD0;border-radius:16px;margin-bottom:12px}
+.symptom-chart-title{font-size:14px;font-weight:700;color:var(--forest);margin-bottom:12px}
+.chart-grid{display:flex;flex-wrap:wrap;gap:6px}
+.chart-dot{
+  padding:6px 12px;border-radius:100px;font-size:12px;cursor:pointer;transition:all .15s;
+  background:var(--bg);border:1.5px solid var(--border);color:var(--muted);
+}
+.chart-dot.sel{background:var(--forest);color:#fff;border-color:var(--forest)}
+.chart-count{font-size:11px;color:var(--muted);margin-top:8px}
+
+/* ── 日誌頁 ── */
+.journal-today{
+  background:var(--forest);padding:20px;
+}
+.journal-today-title{font-size:16px;font-weight:700;color:rgba(255,255,255,.8);margin-bottom:12px}
+.journal-checks{display:flex;flex-direction:column;gap:8px}
+.check-row{
+  display:flex;align-items:center;gap:12px;
+  background:rgba(255,255,255,.08);border-radius:12px;padding:12px 14px;
+}
+.check-emoji{font-size:22px}
+.check-label{flex:1;font-size:15px;color:#fff}
+.check-toggle{width:44px;height:26px;border-radius:13px;background:rgba(255,255,255,.2);position:relative;border:none;cursor:pointer;transition:background .2s;flex-shrink:0}
+.check-toggle.on{background:var(--leaf)}
+.check-toggle::after{content:'';position:absolute;top:3px;left:3px;width:20px;height:20px;border-radius:50%;background:#fff;transition:transform .2s;box-shadow:0 1px 3px rgba(0,0,0,.2)}
+.check-toggle.on::after{transform:translateX(18px)}
+.symptom-area{padding:16px}
+.symptom-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:12px}
+.symptom-chip{
+  padding:10px 8px;border-radius:12px;text-align:center;
+  background:var(--card);border:1.5px solid #E0DAD0;
+  font-size:13px;color:var(--muted);cursor:pointer;transition:all .15s;
+}
+.symptom-chip.sel{background:var(--cream);border-color:var(--amber);color:var(--earth)}
+.note-area{
+  width:100%;padding:12px 14px;
+  background:var(--card);border:1.5px solid #E0DAD0;border-radius:12px;
+  font-size:15px;color:var(--text);line-height:1.7;resize:none;outline:none;
+  font-family:inherit;
+}
+.note-area:focus{border-color:var(--forest)}
+.save-journal-btn{
+  width:100%;padding:14px;margin-top:12px;
+  background:var(--forest);color:#fff;border:none;border-radius:14px;
+  font-size:16px;font-weight:700;cursor:pointer;font-family:inherit;
+  transition:opacity .15s;
+}
+.save-journal-btn:active{opacity:.8}
+/* 日誌歷史 */
+.journal-history{padding:0 16px 16px}
+.journal-entry{
+  background:var(--card);border:1.5px solid #E0DAD0;border-radius:14px;
+  padding:14px;margin-bottom:8px;
+}
+.entry-date{font-size:12px;color:var(--muted);margin-bottom:6px}
+.entry-solar{font-size:13px;font-weight:700;color:var(--forest);margin-bottom:6px}
+.entry-checks{display:flex;flex-wrap:wrap;gap:4px;margin-bottom:6px}
+.entry-check{padding:2px 8px;border-radius:100px;font-size:11px;background:var(--cream);color:var(--earth)}
+.entry-symptoms{font-size:12px;color:var(--muted)}
+.entry-note{font-size:13px;color:var(--text);margin-top:6px;line-height:1.6;border-top:1px solid #F0EAE0;padding-top:6px}
+
+/* ── Toast ── */
+#toast{
+  position:fixed;bottom:80px;left:50%;
+  transform:translateX(-50%) translateY(60px);
+  background:var(--forest);color:#fff;
+  padding:11px 22px;border-radius:100px;
+  font-size:14px;z-index:9999;transition:transform .3s;pointer-events:none;
+}
+
+@media(min-width:480px){
+  .page{max-width:480px;margin:0 auto}
+  .nav-bar{max-width:480px;left:50%;transform:translateX(-50%)}
+}
+</style>
+</head>
+<body>
+
+<!-- ════════════════════════════
+     主頁：今日節氣
+════════════════════════════ -->
+<div id="page-home" class="page active">
+
+  <div class="solar-hero">
+    <div class="hero-bg"></div>
+    <div class="hero-content">
+      <div class="hero-date" id="hero-date">載入中...</div>
+      <div class="hero-solar-name" id="hero-solar-name">節氣</div>
+      <div class="hero-solar-en" id="hero-solar-en">SOLAR TERM</div>
+      <div class="hero-summary" id="hero-summary">正在計算今日節氣...</div>
+      <div class="hero-days-badge" id="hero-days-badge">
+        <span>📅</span><span id="hero-days-text">計算中</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- 今日一句（每日輪換） -->
+  <div style="margin:0 16px 12px;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.15);border-radius:14px;padding:14px 16px;position:relative;z-index:1">
+    <div style="font-size:10px;color:rgba(255,255,255,.5);letter-spacing:2px;margin-bottom:6px">今日養生一句</div>
+    <div style="font-family:'Noto Serif TC',serif;font-size:15px;color:rgba(255,255,255,.9);line-height:1.7;font-style:italic" id="daily-quote">載入中...</div>
+  </div>
+
+  <div class="today-actions" id="today-actions">
+    <!-- 由 JS 填入 -->
+  </div>
+
+</div>
+
+<!-- ════════════════════════════
+     知識庫：24節氣總覽
+════════════════════════════ -->
+<div id="page-library" class="page">
+  <div style="background:var(--forest);padding:20px 16px 16px">
+    <div style="font-family:'Noto Serif TC',serif;font-size:22px;font-weight:900;color:#fff;letter-spacing:2px">二十四節氣</div>
+    <div style="font-size:13px;color:rgba(255,255,255,.6);margin-top:4px">天人相應 · 順時養生</div>
+  </div>
+  <div style="padding:10px 16px 0">
+  <input type="text" id="lib-search" placeholder="🔍 搜尋節氣名稱..." oninput="filterLibrary()"
+    style="width:100%;padding:10px 14px;border:1.5px solid #E0DAD0;border-radius:12px;font-size:14px;font-family:inherit;color:var(--text);background:#fff;outline:none">
+</div>
+<div class="solar-list" id="solar-list"></div>
+</div>
+
+<!-- 節氣詳情（子頁）-->
+<div id="solar-detail" class="solar-detail">
+  <div class="detail-header">
+    <button class="detail-back" onclick="closeDetail()">←</button>
+    <div class="detail-name" id="detail-name">立春</div>
+  </div>
+  <div class="detail-body" id="detail-body"></div>
+</div>
+
+<!-- ════════════════════════════
+     個人日誌
+════════════════════════════ -->
+<div id="page-journal" class="page">
+
+  <div class="journal-today">
+    <div class="journal-today-title" id="journal-today-label">今日自我觀察</div>
+    <div class="journal-checks">
+      <div class="check-row">
+        <span class="check-emoji">💧</span>
+        <span class="check-label">有喝足夠的水</span>
+        <button class="check-toggle" id="chk-water" onclick="this.classList.toggle('on')"></button>
+      </div>
+      <div class="check-row">
+        <span class="check-emoji">🌿</span>
+        <span class="check-label">有吃蔬菜</span>
+        <button class="check-toggle" id="chk-veg" onclick="this.classList.toggle('on')"></button>
+      </div>
+      <div class="check-row">
+        <span class="check-emoji">🌙</span>
+        <span class="check-label">睡眠良好</span>
+        <button class="check-toggle" id="chk-sleep" onclick="this.classList.toggle('on')"></button>
+      </div>
+      <div class="check-row">
+        <span class="check-emoji">🤸</span>
+        <span class="check-label">有做運動</span>
+        <button class="check-toggle" id="chk-exercise" onclick="this.classList.toggle('on')"></button>
+      </div>
+    </div>
+  </div>
+
+  <div class="symptom-area">
+    <div style="font-size:13px;color:var(--muted);margin-bottom:8px;font-weight:600">今天身體有什麼感覺？（可多選）</div>
+    <div class="symptom-grid">
+      <div class="symptom-chip" onclick="this.classList.toggle('sel')">😊 精神好</div>
+      <div class="symptom-chip" onclick="this.classList.toggle('sel')">😪 疲倦</div>
+      <div class="symptom-chip" onclick="this.classList.toggle('sel')">🤧 過敏</div>
+      <div class="symptom-chip" onclick="this.classList.toggle('sel')">🥶 怕冷</div>
+      <div class="symptom-chip" onclick="this.classList.toggle('sel')">🥵 燥熱</div>
+      <div class="symptom-chip" onclick="this.classList.toggle('sel')">💪 有活力</div>
+      <div class="symptom-chip" onclick="this.classList.toggle('sel')">😣 頭痛</div>
+      <div class="symptom-chip" onclick="this.classList.toggle('sel')">🫀 心情好</div>
+      <div class="symptom-chip" onclick="this.classList.toggle('sel')">😞 心情差</div>
+    </div>
+    <textarea class="note-area" id="journal-note" rows="3" placeholder="今天有什麼想記下來的？（飲食、天氣、感受都可以）"></textarea>
+    <button class="save-journal-btn" onclick="saveJournal()">✓ 記錄今天</button>
+  </div>
+
+  <div class="journal-history">
+    <div style="font-size:12px;font-weight:700;letter-spacing:2px;color:var(--muted);text-transform:uppercase;padding:8px 0 10px">過去紀錄</div>
+    <div id="journal-entries"></div>
+  </div>
+
+</div>
+
+<!-- 底部導航 -->
+<nav class="nav-bar">
+  <button class="nav-item active" data-page="home" onclick="switchPage('home',this)">
+    <span class="nav-icon">🌱</span>今日節氣
+  </button>
+  <button class="nav-item" data-page="library" onclick="switchPage('library',this)">
+    <span class="nav-icon">📖</span>節氣知識庫
+  </button>
+  <button class="nav-item" data-page="journal" onclick="switchPage('journal',this)">
+    <span class="nav-icon">📝</span>個人日誌
+  </button>
+  <button class="nav-item" data-page="constitution" onclick="switchPage('constitution',this)">
+    <span class="nav-icon">🧬</span>體質測試
+  </button>
+  <button class="nav-item" data-page="tools" onclick="switchPage('tools',this)">
+    <span class="nav-icon">🔔</span>提醒工具
+  </button>
+</nav>
+
+<div id="toast"></div>
+
+<script>
+// ══════════════════════════════════════
+//  24節氣資料
+// ══════════════════════════════════════
+const SOLAR_TERMS = [
+  {name:'小寒', en:'Minor Cold',     month:1, day:5,
+   season:'winter', summary:'冬意最深，萬物收藏，宜溫補腎陽，早睡晚起。',
+   diet:'🥘 紅棗、枸杞、羊肉、黑芝麻、核桃',
+   sleep:'早睡早起，建議晚上十點前入睡，早上日出後起床',
+   exercise:'可做室內暖身操、太極拳，避免劇烈戶外運動',
+   avoid:'避免寒涼飲食、過度出汗、長時間待在寒風中',
+   classic:'「冬三月，此謂閉藏，水冰地坼，無擾乎陽，早臥晚起，必待日光。」',
+   classicSrc:'—《黃帝內經・四氣調神大論》',
+   classicExtra:'《傷寒論》張仲景：「太陽之為病，脈浮，頭項強痛而惡寒。」小寒受寒易引發太陽病，注意頸背保暖。',
+   symptoms:[
+     {icon:'🤧',name:'手腳冰冷',acupoint:'湧泉穴',location:'腳底中央凹陷處（蜷趾時的凹陷）',method:'每晚睡前用拇指按壓揉捻 1~2 分鐘，有酸脹感為宜，可搭配泡熱水腳'},
+     {icon:'😫',name:'腰背痠痛',acupoint:'腎俞穴',location:'腰部第二腰椎棘突旁開1.5寸（大約兩指寬）',method:'雙手叉腰，用拇指按壓，或用掌心搓熱後貼覆，每次2~3分鐘'},
+   ]},
+  {name:'大寒', en:'Major Cold',     month:1, day:20,
+   season:'winter', summary:'一年最冷時節，補腎防寒，養精蓄銳，靜以養神。',
+   diet:'🍲 薑母鴨、山藥、黑豆、桂圓、糯米',
+   sleep:'最需充足睡眠，不宜熬夜，護養腎精',
+   exercise:'以溫和室內運動為主，戶外注意頸部保暖',
+   avoid:'切忌大量出汗、冷水洗頭、過食生冷',
+   classic:'「寒氣入經而稽遲，泣而不行，客於脈外則血少，客於脈中則氣不通。」',
+   classicSrc:'—《黃帝內經・舉痛論》'},
+  {name:'立春', en:'Start of Spring', month:2, day:4,
+   season:'spring', summary:'陽氣初升，萬物甦醒。疏肝理氣，多吃綠色蔬菜。',
+   diet:'🥬 韭菜、薺菜、菠菜、春筍、豆芽',
+   sleep:'順應日出而作，日落而息的節律，可稍晚一點睡',
+   exercise:'戶外散步、輕度伸展，讓身體感受春氣',
+   avoid:'不宜大補，避免肥膩食物，春氣升散忌壓抑情緒',
+   classic:'「春三月，此謂發陳，天地俱生，萬物以榮，夜臥早起，廣步於庭。」',
+   classicSrc:'—《黃帝內經・四氣調神大論》'},
+  {name:'雨水', en:'Rain Water',     month:2, day:19,
+   season:'spring', summary:'春雨滋潤，濕氣漸重，健脾化濕，調暢情志。',
+   diet:'🌾 薏仁、茯苓、山藥、蓮子、陳皮',
+   sleep:'春困來襲，中午小憩 15~30 分鐘可提神',
+   exercise:'太極、八段錦等輕柔功法，幫助疏通經絡',
+   avoid:'少吃油膩、甜食，以免助濕困脾',
+   classic:'「飲食自倍，腸胃乃傷。」提醒春季飲食要有節制。',
+   classicSrc:'—《黃帝內經・痺論》'},
+  {name:'驚蟄', en:'Awakening of Insects', month:3, day:6,
+   season:'spring', summary:'春雷驚百蟲，陽氣大升，養肝疏氣，情緒舒暢。',
+   diet:'🍋 梨子、蜂蜜、薄荷、荸薺、芹菜',
+   sleep:'可稍早起，感受春天早晨清新的空氣',
+   exercise:'適合戶外慢跑、快走，舒展筋骨',
+   avoid:'避免熬夜、憤怒傷肝，春天最怕情緒壓抑',
+   classic:'「肝者，將軍之官，謀慮出焉。」春天養肝，護好謀略之本。',
+   classicSrc:'—《黃帝內經・靈蘭秘典論》'},
+  {name:'春分', en:'Spring Equinox',  month:3, day:20,
+   season:'spring', summary:'陰陽平衡，萬物繁榮，養生重在「平衡」二字。',
+   diet:'🌸 草莓、薺菜、桑葚、枸杞嫩芽',
+   sleep:'日夜等長，規律作息是最好的養生',
+   exercise:'戶外活動最佳時機，爬山、騎車均宜',
+   avoid:'春分前後多風，注意預防感冒、花粉過敏',
+   classic:'「陰平陽秘，精神乃治。」陰陽平衡是健康的根本。',
+   classicSrc:'—《黃帝內經・生氣通天論》'},
+  {name:'清明', en:'Clear and Bright', month:4, day:5,
+   season:'spring', summary:'萬物清潔明淨，宜戶外踏青，疏肝健脾。',
+   diet:'🍵 清淡為主，多吃葉菜類，可喝菊花茶',
+   sleep:'春睏仍重，中午小睡有助下午精神',
+   exercise:'踏青賞花、放風箏，愉悅心神',
+   avoid:'少食辛辣，這節氣肝火易旺，需調情志',
+   classic:'「春氣者，諸病在頭。」清明前後頭部保養最重要。',
+   classicSrc:'—《黃帝內經・金匱真言論》'},
+  {name:'穀雨', en:'Grain Rain',      month:4, day:20,
+   season:'spring', summary:'雨水充沛，穀物生長，除濕健脾，防過敏。',
+   diet:'🥗 香椿、山藥、薏仁、茯苓、紅豆',
+   sleep:'避免潮濕環境睡眠，保持寢室通風乾燥',
+   exercise:'強度可稍加，但注意穀雨前後多雨，防滑',
+   avoid:'避免久居潮濕環境，小心濕疹、關節炎',
+   classic:'「人以天地之氣生，四時之法成。」順應天地，方能健康。',
+   classicSrc:'—《黃帝內經・寶命全形論》'},
+  {name:'立夏', en:'Start of Summer',  month:5, day:6,
+   season:'summer', summary:'夏氣降臨，養心為主，情緒平穩，避免過激。',
+   diet:'🍓 苦瓜、蓮子、百合、西瓜（適量）、綠豆',
+   sleep:'可稍晚睡，但早起，中午小憩補充精神',
+   exercise:'避開正午，清晨或傍晚運動為佳',
+   avoid:'過度貪涼、大量冷飲，易傷脾胃',
+   classic:'「夏三月，此謂蕃秀，天地氣交，萬物華實，夜臥早起，無厭於日。」',
+   classicSrc:'—《黃帝內經・四氣調神大論》'},
+  {name:'小滿', en:'Grain Buds',      month:5, day:21,
+   season:'summer', summary:'萬物豐盈，濕熱漸重，清熱利濕，養心安神。',
+   diet:'🌊 苦菜、冬瓜、薏仁、綠豆、蓮藕',
+   sleep:'夜間炎熱，保持通風，不宜對著冷氣直吹',
+   exercise:'水中運動、傍晚散步最適合',
+   avoid:'少吃肥甘厚味、海鮮（過敏季節），防皮膚病',
+   classic:'「心者，生之本，神之變也。」夏天養心，保持心情平和。',
+   classicSrc:'—《黃帝內經・六節藏象論》'},
+  {name:'芒種', en:'Grain in Ear',    month:6, day:6,
+   season:'summer', summary:'農忙時節，暑氣漸盛，補充水分，清暑益氣。',
+   diet:'🍉 西瓜、綠豆湯、荷葉茶、烏梅、黃瓜',
+   sleep:'中午一定要午睡，幫助恢復精力',
+   exercise:'以游泳、清晨太極為主，避開 11-15 點',
+   avoid:'禁止在烈日下長時間活動，預防中暑',
+   classic:'「炅則氣洩。」高溫時節，陽氣外洩，更需補充能量。',
+   classicSrc:'—《黃帝內經・舉痛論》'},
+  {name:'夏至', en:'Summer Solstice', month:6, day:21,
+   season:'summer', summary:'陽氣至極，白晝最長，順應自然，靜心養陽。',
+   diet:'🫚 苦味食物最佳：苦瓜、蓮子心、苦茶',
+   sleep:'夏至陽氣最盛，午睡 30 分鐘可平衡陰陽',
+   exercise:'輕柔運動為主，不宜大汗淋漓',
+   avoid:'冷熱交替傷身，從冷氣房出去要先在陰涼處過渡',
+   classic:'「汗者，心之液。」夏天多汗傷心，要注意補水養心。',
+   classicSrc:'—《黃帝內經》'},
+  {name:'小暑', en:'Minor Heat',      month:7, day:7,
+   season:'summer', summary:'暑熱初盛，注重消暑，清淡飲食，勿貪冷飲。',
+   diet:'🫙 蓮子粥、荷葉、冬瓜湯、薄荷茶',
+   sleep:'保持室內通風，睡前用溫水泡腳幫助入睡',
+   exercise:'清晨 6-8 點最佳，傍晚次之',
+   avoid:'空調溫度不低於 26°C，避免肩頸對著冷氣吹',
+   classic:'「精神內守，病安從來？」心靜自然涼，情緒穩定是最好的消暑。',
+   classicSrc:'—《黃帝內經・上古天真論》'},
+  {name:'大暑', en:'Major Heat',      month:7, day:23,
+   season:'summer', summary:'一年最熱，防暑第一，益氣養陰，調補脾胃。',
+   diet:'🍋 薏仁湯、冬瓜、綠豆、楊桃、水蜜桃',
+   sleep:'確保充足睡眠，夜間盡量保持涼爽',
+   exercise:'以水上活動、清晨慢走為主',
+   avoid:'忌暴飲暴食、忌生冷、忌情緒激動',
+   classic:'「夏傷於暑，秋為痎瘧。」大暑防暑，也是在預防秋季的疾病。',
+   classicSrc:'—《黃帝內經・陰陽應象大論》'},
+  {name:'立秋', en:'Start of Autumn',  month:8, day:7,
+   season:'autumn', summary:'秋意始現，滋陰潤燥，養肺護膚，情緒平和。',
+   diet:'🍐 梨子、蓮藕、百合、銀耳、蜂蜜',
+   sleep:'秋天開始可早睡早起，讓身體適應節律變化',
+   exercise:'登山、騎車、晨跑都很適合，秋高氣爽',
+   avoid:'秋燥傷肺，少吃辛辣刺激，多補水',
+   classic:'「秋三月，此謂容平，天氣以急，地氣以明，早臥早起，與雞俱興。」',
+   classicSrc:'—《黃帝內經・四氣調神大論》'},
+  {name:'處暑', en:'End of Heat',     month:8, day:23,
+   season:'autumn', summary:'暑氣消退，秋意漸濃，養肺護脾，調節情緒。',
+   diet:'🍠 地瓜、山藥、紅棗、枸杞、白木耳',
+   sleep:'秋天睡眠品質好，好好把握，早點入睡',
+   exercise:'秋季是運動好時機，可加大運動量',
+   avoid:'秋燥要防，多喝水，少吃乾燥食品',
+   classic:'「肺者，相傅之官，治節出焉。」秋天養肺，全身治理都順暢。',
+   classicSrc:'—《黃帝內經・靈蘭秘典論》'},
+  {name:'白露', en:'White Dew',       month:9, day:8,
+   season:'autumn', summary:'露水出現，涼意漸濃，補氣健脾，預防秋燥咳嗽。',
+   diet:'🍯 蜂蜜、核桃、芝麻、沙參、玉竹',
+   sleep:'早晚溫差大，睡前記得確認棉被夠不夠暖',
+   exercise:'強度可加大，利用秋高氣爽做戶外運動',
+   avoid:'早晚添衣，尤其頸部保暖，防止受涼咳嗽',
+   classic:'「燥勝則乾。」白露之後秋燥主導，潤燥是最重要的養生原則。',
+   classicSrc:'—《黃帝內經・陰陽應象大論》'},
+  {name:'秋分', en:'Autumn Equinox',  month:9, day:23,
+   season:'autumn', summary:'陰陽再度平衡，養生以平為要，收斂神氣。',
+   diet:'🥕 胡蘿蔔、蓮藕、菱角、柿子、柚子',
+   sleep:'規律作息最重要，秋分陰陽平衡，人體也應求平衡',
+   exercise:'以中等強度持續運動為主，不要突然加大強度',
+   avoid:'悲秋情緒要注意，多戶外活動調節心情',
+   classic:'「秋氣者，諸病在肩背。」秋天要特別注意肩背保暖。',
+   classicSrc:'—《黃帝內經・金匱真言論》'},
+  {name:'寒露', en:'Cold Dew',        month:10, day:8,
+   season:'autumn', summary:'涼意轉寒，潤肺防燥，滋養腎氣，護好關節。',
+   diet:'🌰 栗子、黑木耳、山藥、百合、菊花茶',
+   sleep:'天氣轉涼，睡眠品質改善，可充分休息',
+   exercise:'注意熱身，慢跑時護好膝蓋',
+   avoid:'露腳受寒，老話「寒露腳不露」有道理',
+   classic:'「腎者，作強之官，伎巧出焉。」秋末養腎，是冬天的基礎。',
+   classicSrc:'—《黃帝內經・靈蘭秘典論》'},
+  {name:'霜降', en:'Frost\'s Descent', month:10, day:23,
+   season:'autumn', summary:'初霜降臨，補脾健胃，收斂陽氣，迎接冬季。',
+   diet:'🍲 羊肉、板栗、地瓜、蘿蔔、柿子',
+   sleep:'可稍微延長睡眠時間，為冬季蓄積能量',
+   exercise:'以輕柔拉伸為主，避免過度消耗陽氣',
+   avoid:'不宜長時間待在戶外風中，注意保暖',
+   classic:'「形寒飲冷則傷肺。」霜降之後，飲食要避免生冷。',
+   classicSrc:'—《黃帝內經・咳論》'},
+  {name:'立冬', en:'Start of Winter',  month:11, day:7,
+   season:'winter', summary:'冬季開始，補腎藏精，早睡晚起，蓄積能量。',
+   diet:'🥩 羊肉、黑豆、核桃、黑芝麻、當歸',
+   sleep:'立冬後「早睡晚起，必待日光」，保護陽氣',
+   exercise:'減少戶外劇烈運動，以散步、太極為主',
+   avoid:'過度消耗，冬天藏精比補精更重要',
+   classic:'「冬三月，此謂閉藏⋯⋯若有私意，若已有得，去寒就溫，無洩皮膚。」',
+   classicSrc:'—《黃帝內經・四氣調神大論》'},
+  {name:'小雪', en:'Minor Snow',      month:11, day:22,
+   season:'winter', summary:'初雪飄降，天地閉塞，溫補腎陽，暢情志。',
+   diet:'🧅 洋蔥、大蒜、薑、黑豆、羊肉爐',
+   sleep:'充足睡眠，避免熬夜損傷腎陽',
+   exercise:'室內運動為主，八段錦、瑜伽效果好',
+   avoid:'情緒低落是小雪常見問題，多曬太陽、多社交',
+   classic:'「冬氣者，諸病在四支。」冬天四肢保暖最重要。',
+   classicSrc:'—《黃帝內經・金匱真言論》'},
+  {name:'大雪', en:'Major Snow',      month:12, day:7,
+   season:'winter', summary:'雪大地閉，補腎固精，避寒就暖，蓄能待春。',
+   diet:'🍜 羊肉湯、薑母鴨、黑米粥、桂圓蓮子',
+   sleep:'最需要早睡，是全年睡眠最重要的節氣',
+   exercise:'若要外出運動，一定要充分熱身',
+   avoid:'突然用力、寒風刮臉，容易誘發心腦血管問題',
+   classic:'「腎藏精，精舍志。」大雪藏精，是明年精力的根本。',
+   classicSrc:'—《黃帝內經・宣明五氣》'},
+  {name:'冬至', en:'Winter Solstice', month:12, day:21,
+   season:'winter', summary:'陰極陽生，吃湯圓，補腎陽，新的循環從今天開始。',
+   diet:'🥟 湯圓、羊肉、薑湯、黑木耳、枸杞',
+   sleep:'冬至一陽生，這天特別適合好好休息',
+   exercise:'冬至後陽氣回升，適度增加活動量',
+   avoid:'過食油膩，冬至進補要「補而不過」',
+   classic:'「冬至一陽生，夏至一陰生。」這是一年中最重要的陰陽轉換點。',
+   classicSrc:'—中醫陰陽理論'},
+];
+
+// ══════════════════════════════════════
+//  計算當前節氣
+// ══════════════════════════════════════
+function getCurrentSolar(date) {
+  const m = date.getMonth()+1;
+  const d = date.getDate();
+  // 找最近的節氣
+  let best = null;
+  let minDiff = Infinity;
+  SOLAR_TERMS.forEach(st => {
+    const sDate = new Date(date.getFullYear(), st.month-1, st.day);
+    const diff = (date - sDate) / 86400000;
+    if(diff >= 0 && diff < minDiff) { minDiff = diff; best = st; }
+  });
+  // 如果年底找不到，找上一年最後一個
+  if(!best) best = SOLAR_TERMS[SOLAR_TERMS.length-1];
+  return {term:best, daysIn:Math.floor(minDiff)};
+}
+
+function getNextSolar(date) {
+  const m = date.getMonth()+1;
+  const d = date.getDate();
+  let next = null;
+  let minDiff = Infinity;
+  SOLAR_TERMS.forEach(st => {
+    const sDate = new Date(date.getFullYear(), st.month-1, st.day);
+    const diff = (sDate - date) / 86400000;
+    if(diff > 0 && diff < minDiff) { minDiff = diff; next = {term:st, daysLeft:Math.ceil(diff)}; }
+  });
+  if(!next) {
+    // 跨年，找明年第一個
+    const st = SOLAR_TERMS[0];
+    const sDate = new Date(date.getFullYear()+1, st.month-1, st.day);
+    const diff = (sDate - date) / 86400000;
+    next = {term:st, daysLeft:Math.ceil(diff)};
+  }
+  return next;
+}
+
+// ══════════════════════════════════════
+//  初始化主頁
+// ══════════════════════════════════════
+function initHome() {
+  const now = new Date();
+  const {term, daysIn} = getCurrentSolar(now);
+  const next = getNextSolar(now);
+
+  const days = ['日','一','二','三','四','五','六'];
+  document.getElementById('hero-date').textContent =
+    `${now.getFullYear()}年 ${now.getMonth()+1}月${now.getDate()}日 星期${days[now.getDay()]}`;
+  document.getElementById('hero-solar-name').textContent = term.name;
+  document.getElementById('hero-solar-en').textContent = term.en.toUpperCase();
+  document.getElementById('hero-summary').textContent = term.summary;
+  document.getElementById('hero-days-text').textContent =
+    `已入${term.name} ${daysIn} 天 · ${next.term.name}還有 ${next.daysLeft} 天`;
+
+  // 今日行動建議
+  const actions = document.getElementById('today-actions');
+  actions.innerHTML = `
+  <div class="action-card">
+    <span class="action-icon">🥢</span>
+    <div class="action-info">
+      <div class="action-cat">飲食建議</div>
+      <div class="action-title">今日適合食材</div>
+      <div class="action-desc">${term.diet}</div>
+      <div class="action-tip">以上食材依傳統養生建議，可依個人情況適量食用</div>
+    </div>
+  </div>
+  <div class="action-card">
+    <span class="action-icon">🌙</span>
+    <div class="action-info">
+      <div class="action-cat">起居建議</div>
+      <div class="action-title">睡眠作息</div>
+      <div class="action-desc">${term.sleep}</div>
+    </div>
+  </div>
+  <div class="action-card">
+    <span class="action-icon">🤸</span>
+    <div class="action-info">
+      <div class="action-cat">運動建議</div>
+      <div class="action-title">適合的活動</div>
+      <div class="action-desc">${term.exercise}</div>
+    </div>
+  </div>
+  <div class="action-card">
+    <span class="action-icon">⚠️</span>
+    <div class="action-info">
+      <div class="action-cat">注意事項</div>
+      <div class="action-title">這時節要避免</div>
+      <div class="action-desc">${term.avoid}</div>
+    </div>
+  </div>
+  <div class="action-card">
+    <span class="action-icon">📜</span>
+    <div class="action-info">
+      <div class="action-cat">內經智慧</div>
+      <div class="action-title">古人說</div>
+      <div class="action-desc" style="font-family:'Noto Serif TC',serif">「${term.classic}」</div>
+      <div class="action-tip">${term.classicSrc}<br>（養生建議，非醫療診斷）</div>
+    </div>
+  </div>
+  ${term.symptoms ? `
+  <div class="action-card" style="border-color:var(--sand)">
+    <span class="action-icon">🎯</span>
+    <div class="action-info">
+      <div class="action-cat">穴位小提示</div>
+      <div class="action-title">這時節常見不適：${term.symptoms.map(s=>s.name).join('・')}</div>
+      <div class="action-desc">點「節氣知識庫」→「${term.name}」查看完整穴位按摩說明</div>
+      <div class="action-tip">傳統養生穴位按摩，僅供參考，不構成醫療建議</div>
+    </div>
+  </div>` : ''}`;
+}
+
+// ══════════════════════════════════════
+//  知識庫
+// ══════════════════════════════════════
+function filterLibrary() {
+  const q = document.getElementById('lib-search')?.value?.trim() || '';
+  document.querySelectorAll('.solar-item').forEach(el => {
+    const name = el.querySelector('.solar-item-name')?.textContent || '';
+    el.style.display = (!q || name.includes(q)) ? '' : 'none';
+  });
+}
+function initLibrary() {
+  const now = new Date();
+  const {term:cur} = getCurrentSolar(now);
+  const el = document.getElementById('solar-list');
+  const seasonNames = {spring:'春',summer:'夏',autumn:'秋',winter:'冬'};
+  el.innerHTML = SOLAR_TERMS.map(st=>`
+    <div class="solar-item ${st.name===cur.name?'current':''}" onclick="openDetail('${st.name}')">
+      <span class="solar-season-dot dot-${st.season}"></span>
+      <div class="solar-item-name">${st.name}</div>
+      <div class="solar-item-date">${st.month}月${st.day}日前後</div>
+      ${st.name===cur.name?'<div class="solar-item-badge">當前節氣</div>':''}
+    </div>`).join('');
+}
+
+function openDetail(name) {
+  const st = SOLAR_TERMS.find(s=>s.name===name);
+  document.getElementById('detail-name').textContent = st.name;
+  const acuHtml = st.symptoms ? `
+  <div class="detail-card">
+    <div class="detail-card-title">🎯 這個節氣常見不適・穴位按摩</div>
+    <div class="detail-card-body" style="margin-bottom:10px">以下是${st.name}前後常見的身體狀況及傳統穴位按摩建議，僅供參考，不構成醫療建議。</div>
+    <div class="acupoint-grid">
+      ${st.symptoms.map(s=>`
+      <div class="acu-card">
+        <div class="acu-header"><span class="acu-icon">${s.icon}</span><span class="acu-symptom">${s.name}</span></div>
+        <div class="acu-name">穴位：${s.acupoint}</div>
+        <div class="acu-location">📍 位置：${s.location}</div>
+        <div class="acu-method">按摩方式：${s.method}</div>
+      </div>`).join('')}
+    </div>
+    <div class="acu-disclaimer">⚠️ 穴位按摩為傳統養生方法，若有不適請停止並諮詢醫師</div>
+  </div>` : '';
+
+  const extraClassicHtml = st.classicExtra ? `
+  <div class="detail-card" style="background:#F9F5EF">
+    <div class="detail-card-title">📚 《傷寒論》相關記載</div>
+    <div class="detail-card-body" style="font-family:'Noto Serif TC',serif;font-size:14px;color:var(--earth);line-height:1.9">${st.classicExtra}</div>
+  </div>` : '';
+
+  document.getElementById('detail-body').innerHTML = `
+  <div class="detail-card">
+    <div class="detail-card-title">🌿 節氣概覽</div>
+    <div class="detail-card-body">${st.summary}<br><br>通常在 <strong>${st.month}月${st.day}日</strong> 前後，屬<strong>${{spring:'春季',summer:'夏季',autumn:'秋季',winter:'冬季'}[st.season]}</strong>節氣。</div>
+  </div>
+  <div class="detail-card">
+    <div class="detail-card-title">🥢 飲食建議</div>
+    <div class="detail-card-body">${st.diet}<br><br>以上食材為傳統養生建議，可依個人體質和喜好調整，如有特殊疾病請諮詢醫師。</div>
+  </div>
+  <div class="detail-card">
+    <div class="detail-card-title">🌙 起居建議</div>
+    <div class="detail-card-body">${st.sleep}</div>
+  </div>
+  <div class="detail-card">
+    <div class="detail-card-title">🤸 運動建議</div>
+    <div class="detail-card-body">${st.exercise}</div>
+  </div>
+  <div class="detail-card">
+    <div class="detail-card-title">⚠️ 注意事項</div>
+    <div class="detail-card-body">${st.avoid}</div>
+  </div>
+  ${acuHtml}
+  <div class="detail-card">
+    <div class="detail-card-title">📜 《黃帝內經》智慧</div>
+    <div class="detail-quote">
+      「${st.classic}」
+      <cite>${st.classicSrc}</cite>
+    </div>
+  </div>
+  ${extraClassicHtml}
+  <div class="detail-card" style="background:#F5F5F0">
+    <div class="detail-card-body" style="font-size:12px;color:var(--hint)">本頁內容為傳統文化養生知識，不構成醫療建議。如有健康疑慮，請諮詢醫療專業人員。</div>
+  </div>`;
+  document.getElementById('page-library').style.display='none';
+  document.getElementById('solar-detail').classList.add('open');
+}
+function closeDetail() {
+  document.getElementById('solar-detail').classList.remove('open');
+  document.getElementById('page-library').style.display='flex';
+}
+
+// ══════════════════════════════════════
+//  個人日誌
+// ══════════════════════════════════════
+let journalData = JSON.parse(localStorage.getItem('st_journal')||'[]');
+
+function saveJournal() {
+  const now = new Date();
+  const {term} = getCurrentSolar(now);
+  const checks = {
+    water: document.getElementById('chk-water').classList.contains('on'),
+    veg:   document.getElementById('chk-veg').classList.contains('on'),
+    sleep: document.getElementById('chk-sleep').classList.contains('on'),
+    exercise: document.getElementById('chk-exercise').classList.contains('on'),
+  };
+  const symptoms = [...document.querySelectorAll('.symptom-chip.sel')].map(c=>c.textContent.trim());
+  const note = document.getElementById('journal-note').value.trim();
+
+  const entry = {
+    id: Date.now(),
+    date: now.toLocaleDateString('zh-TW'),
+    solar: term.name,
+    checks, symptoms, note,
+  };
+  journalData.unshift(entry);
+  if(journalData.length>100) journalData=journalData.slice(0,100);
+  localStorage.setItem('st_journal', JSON.stringify(journalData));
+
+  // 清空
+  ['chk-water','chk-veg','chk-sleep','chk-exercise'].forEach(id=>document.getElementById(id).classList.remove('on'));
+  document.querySelectorAll('.symptom-chip').forEach(c=>c.classList.remove('sel'));
+  document.getElementById('journal-note').value='';
+
+  renderJournal();
+  showToast('✓ 今日記錄已儲存');
+}
+
+function renderJournal() {
+  const el = document.getElementById('journal-entries');
+  const {term} = getCurrentSolar(new Date());
+  document.getElementById('journal-today-label').textContent = `今日（${term.name}）自我觀察`;
+  if(!journalData.length) {
+    el.innerHTML='<div style="text-align:center;padding:24px;color:var(--muted);font-size:14px">還沒有任何記錄<br>從上方開始記錄今天吧！</div>';
+    return;
+  }
+  el.innerHTML = journalData.slice(0,20).map(e=>{
+    const checkLabels = {water:'喝水✓',veg:'蔬菜✓',sleep:'睡眠✓',exercise:'運動✓'};
+    const doneCks = Object.entries(e.checks).filter(([k,v])=>v).map(([k])=>`<span class="entry-check">${checkLabels[k]}</span>`).join('');
+    return `
+    <div class="journal-entry">
+      <div class="entry-date">${e.date}</div>
+      <div class="entry-solar">📅 ${e.solar}</div>
+      ${doneCks ? `<div class="entry-checks">${doneCks}</div>` : ''}
+      ${e.symptoms.length ? `<div class="entry-symptoms">身體感覺：${e.symptoms.join('・')}</div>` : ''}
+      ${e.note ? `<div class="entry-note">${e.note}</div>` : ''}
+    </div>`;
+  }).join('');
+}
+
+// ══════════════════════════════════════
+//  頁面切換
+// ══════════════════════════════════════
+function switchPage(which, navEl) {
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
+  document.getElementById('page-'+which).classList.add('active');
+  if(navEl) navEl.classList.add('active');
+  if(which==='library') initLibrary();
+  if(which==='journal') renderJournal();
+  if(which==='tools'){ initToolsCountdown(); initHabits(); }
+  if(which==='constitution'){ initConstPage(); }
+  window.scrollTo(0,0);
+}
+
+function showToast(msg) {
+  const t=document.getElementById('toast');
+  t.textContent=msg;
+  t.style.transform='translateX(-50%) translateY(0)';
+  clearTimeout(t._t);
+  t._t=setTimeout(()=>t.style.transform='translateX(-50%) translateY(60px)',2800);
+}
+
+// 啟動
+initHome();
+
+// 初始化每日一句
+(function initDailyQuote(){
+  const QUOTES = [
+    '「飲食自倍，腸胃乃傷。」— 《黃帝內經》',
+    '「上工治未病，不治已病。」— 《黃帝內經》',
+    '「春夏養陽，秋冬養陰。」— 《黃帝內經》',
+    '「精神內守，病安從來？」— 《黃帝內經》',
+    '「恬淡虛無，真氣從之。」— 《黃帝內經》',
+    '「陰平陽秘，精神乃治。」— 《黃帝內經》',
+    '「法於陰陽，和於術數。」— 《黃帝內經》',
+    '「寒者熱之，熱者寒之。」— 《黃帝內經》',
+    '「邪之所湊，其氣必虛。」— 《黃帝內經》',
+    '「正氣存內，邪不可干。」— 《黃帝內經》',
+    '「春生、夏長、秋收、冬藏。」— 《黃帝內經》',
+    '「百病皆生於氣。」— 《黃帝內經》',
+    '「人以天地之氣生，四時之法成。」— 《黃帝內經》',
+    '「勞則氣耗，思則氣結。」— 《黃帝內經》',
+    '「藥補不如食補，食補不如睡補。」— 養生諺語',
+    '「飲食有節，起居有常，不妄作勞。」— 《黃帝內經》',
+    '「心者，生之本，神之變也。」— 《黃帝內經》',
+    '「腎者，作強之官，伎巧出焉。」— 《黃帝內經》',
+    '「肝者，將軍之官，謀慮出焉。」— 《黃帝內經》',
+    '「五臟者，藏精氣而不瀉也。」— 《黃帝內經》',
+    '「凡欲診病者，必問飲食居處。」— 《黃帝內經》',
+    '「不治已病治未病，不治已亂治未亂。」— 《黃帝內經》',
+    '「陰者，藏精而起亟也；陽者，衛外而為固也。」— 《黃帝內經》',
+    '「太陽之為病，脈浮，頭項強痛而惡寒。」— 《傷寒論》',
+    '「病痰飲者，當以溫藥和之。」— 《金匱要略》',
+  ];
+  const dayIdx = Math.floor(Date.now()/86400000) % QUOTES.length;
+  const el = document.getElementById('daily-quote');
+  if(el) el.textContent = QUOTES[dayIdx];
+})();
+</script>
+
+<!-- ══════════════════════════════════
+     工具與提醒頁
+══════════════════════════════════ -->
+<div id="page-tools" class="page" style="background:var(--bg)">
+  <div style="background:var(--forest);padding:20px 16px 16px;position:sticky;top:0;z-index:10">
+    <div style="font-family:'Noto Serif TC',serif;font-size:22px;font-weight:900;color:#fff;letter-spacing:2px">🔔 提醒工具</div>
+    <div style="font-size:13px;color:rgba(255,255,255,.65);margin-top:4px">節氣倒數・養生提醒・計時工具</div>
+  </div>
+  <div style="padding:16px">
+
+    <!-- 下個節氣倒數 -->
+    <div style="background:#fff;border:1.5px solid #E0DAD0;border-radius:18px;padding:20px;margin-bottom:12px" id="tools-countdown-card">
+      <div style="font-size:14px;font-weight:700;color:var(--forest);margin-bottom:12px">📅 下個節氣倒數</div>
+      <div style="text-align:center;padding:16px 0">
+        <div style="font-family:'Noto Serif TC',serif;font-size:36px;font-weight:900;color:var(--forest)" id="tools-next-name">—</div>
+        <div style="font-size:13px;color:var(--muted);margin:6px 0" id="tools-next-date">計算中...</div>
+        <div style="font-size:48px;font-weight:900;color:var(--forest);margin:10px 0" id="tools-countdown-num">—</div>
+        <div style="font-size:13px;color:var(--muted)">天後</div>
+        <div style="margin-top:14px;display:grid;grid-template-columns:repeat(3,1fr);gap:8px" id="tools-countdown-hms">
+          <div style="background:var(--cream);border-radius:12px;padding:12px 8px;text-align:center">
+            <div style="font-size:28px;font-weight:900;color:var(--forest)" id="cd-h">00</div>
+            <div style="font-size:11px;color:var(--muted)">小時</div>
+          </div>
+          <div style="background:var(--cream);border-radius:12px;padding:12px 8px;text-align:center">
+            <div style="font-size:28px;font-weight:900;color:var(--forest)" id="cd-m">00</div>
+            <div style="font-size:11px;color:var(--muted)">分鐘</div>
+          </div>
+          <div style="background:var(--cream);border-radius:12px;padding:12px 8px;text-align:center">
+            <div style="font-size:28px;font-weight:900;color:var(--forest)" id="cd-s">00</div>
+            <div style="font-size:11px;color:var(--muted)">秒</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 養生計時器 -->
+    <div style="background:#fff;border:1.5px solid #E0DAD0;border-radius:18px;padding:20px;margin-bottom:12px">
+      <div style="font-size:14px;font-weight:700;color:var(--forest);margin-bottom:12px">⏱️ 養生計時器</div>
+      <div style="font-size:13px;color:var(--muted);margin-bottom:12px">選一個養生動作，計時提醒你完成</div>
+      <div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:14px">
+        <button onclick="startTimer(300,'深呼吸冥想')" style="padding:8px 14px;border-radius:100px;border:1.5px solid #D0DAD4;background:#F4FAF6;color:var(--forest);font-size:13px;font-weight:600;cursor:pointer;font-family:inherit">🧘 冥想 5分</button>
+        <button onclick="startTimer(900,'健康操')" style="padding:8px 14px;border-radius:100px;border:1.5px solid #D0DAD4;background:#F4FAF6;color:var(--forest);font-size:13px;font-weight:600;cursor:pointer;font-family:inherit">🤸 健康操 15分</button>
+        <button onclick="startTimer(1800,'散步')" style="padding:8px 14px;border-radius:100px;border:1.5px solid #D0DAD4;background:#F4FAF6;color:var(--forest);font-size:13px;font-weight:600;cursor:pointer;font-family:inherit">🚶 散步 30分</button>
+        <button onclick="startTimer(1800,'午睡')" style="padding:8px 14px;border-radius:100px;border:1.5px solid #D0DAD4;background:#F4FAF6;color:var(--forest);font-size:13px;font-weight:600;cursor:pointer;font-family:inherit">😴 午睡 30分</button>
+        <button onclick="startTimer(600,'泡腳')" style="padding:8px 14px;border-radius:100px;border:1.5px solid #D0DAD4;background:#F4FAF6;color:var(--forest);font-size:13px;font-weight:600;cursor:pointer;font-family:inherit">🦶 泡腳 10分</button>
+      </div>
+      <div id="timer-display" style="display:none;text-align:center;padding:16px;background:var(--cream);border-radius:14px">
+        <div style="font-size:13px;color:var(--muted);margin-bottom:6px" id="timer-label">深呼吸冥想</div>
+        <div style="font-size:52px;font-weight:900;color:var(--forest);font-family:'Noto Serif TC',serif;line-height:1" id="timer-time">05:00</div>
+        <div style="display:flex;gap:10px;justify-content:center;margin-top:14px">
+          <button id="timer-toggle" onclick="toggleTimer()" style="padding:12px 24px;border-radius:100px;background:var(--forest);color:#fff;border:none;font-size:15px;font-weight:700;cursor:pointer;font-family:inherit">⏸ 暫停</button>
+          <button onclick="stopTimer()" style="padding:12px 18px;border-radius:100px;background:none;color:var(--muted);border:1.5px solid #D0DAD4;font-size:15px;cursor:pointer;font-family:inherit">✕ 停止</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- 今日習慣打勾（快速版） -->
+    <div style="background:#fff;border:1.5px solid #E0DAD0;border-radius:18px;padding:20px;margin-bottom:12px">
+      <div style="font-size:14px;font-weight:700;color:var(--forest);margin-bottom:12px">✅ 今日養生習慣</div>
+      <div style="display:flex;flex-direction:column;gap:8px" id="habit-list">
+        <!-- 動態生成 -->
+      </div>
+      <div style="font-size:12px;color:var(--muted);margin-top:10px">✓ 完整記錄請到「個人日誌」頁</div>
+    </div>
+
+    <!-- 節氣通知說明 -->
+    <div style="background:var(--cream);border:1.5px solid #D0C8B8;border-radius:16px;padding:16px;margin-bottom:12px">
+      <div style="font-size:14px;font-weight:700;color:var(--earth);margin-bottom:8px">📱 節氣到達通知</div>
+      <div style="font-size:13px;color:var(--muted);line-height:1.8">
+        將此頁面「加入主螢幕」後，每逢節氣當日打開 App，主頁會顯示新節氣提醒。<br><br>
+        <strong style="color:var(--earth)">加入主螢幕方式：</strong><br>
+        iPhone：Safari → 分享 → 加入主畫面<br>
+        Android：Chrome → 選單 → 新增至主畫面
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+// ════════════════════════════════════
+//  節氣倒數計時
+// ════════════════════════════════════
+function initToolsCountdown() {
+  const now = new Date();
+  const next = getNextSolar(now);
+  if (!next) return;
+  document.getElementById('tools-next-name').textContent = next.term.name;
+  const nextDate = new Date(now.getFullYear(), next.term.month-1, next.term.day);
+  if (nextDate < now) nextDate.setFullYear(now.getFullYear()+1);
+  document.getElementById('tools-next-date').textContent =
+    `${nextDate.getMonth()+1}月${nextDate.getDate()}日`;
+  function tick() {
+    const diff = nextDate - new Date();
+    if (diff < 0) { initToolsCountdown(); return; }
+    const days = Math.floor(diff/86400000);
+    const h = Math.floor((diff%86400000)/3600000);
+    const m = Math.floor((diff%3600000)/60000);
+    const s = Math.floor((diff%60000)/1000);
+    document.getElementById('tools-countdown-num').textContent = days;
+    document.getElementById('cd-h').textContent = String(h).padStart(2,'0');
+    document.getElementById('cd-m').textContent = String(m).padStart(2,'0');
+    document.getElementById('cd-s').textContent = String(s).padStart(2,'0');
+  }
+  tick();
+  if (window._cdTimer) clearInterval(window._cdTimer);
+  window._cdTimer = setInterval(tick, 1000);
+}
+
+// ════════════════════════════════════
+//  養生計時器
+// ════════════════════════════════════
+let timerInterval = null, timerLeft = 0, timerPaused = false;
+function startTimer(sec, label) {
+  clearInterval(timerInterval);
+  timerLeft = sec; timerPaused = false;
+  document.getElementById('timer-label').textContent = label;
+  document.getElementById('timer-display').style.display='block';
+  document.getElementById('timer-toggle').textContent='⏸ 暫停';
+  updateTimerDisplay();
+  timerInterval = setInterval(() => {
+    if (timerPaused) return;
+    timerLeft--;
+    if (timerLeft <= 0) {
+      clearInterval(timerInterval);
+      document.getElementById('timer-time').textContent = '完成！';
+      showToast('🎉 ' + label + ' 完成！');
+      return;
+    }
+    updateTimerDisplay();
+  }, 1000);
+}
+function updateTimerDisplay() {
+  const m = Math.floor(timerLeft/60), s = timerLeft%60;
+  document.getElementById('timer-time').textContent =
+    String(m).padStart(2,'0')+':'+String(s).padStart(2,'0');
+}
+function toggleTimer() {
+  timerPaused = !timerPaused;
+  document.getElementById('timer-toggle').textContent = timerPaused ? '▶ 繼續' : '⏸ 暫停';
+}
+function stopTimer() {
+  clearInterval(timerInterval);
+  document.getElementById('timer-display').style.display='none';
+}
+
+// ════════════════════════════════════
+//  今日習慣快速打勾
+// ════════════════════════════════════
+const HABITS = [
+  {id:'h-water', em:'💧', name:'喝足夠的水'},
+  {id:'h-veg',   em:'🥬', name:'吃蔬菜'},
+  {id:'h-sleep', em:'🌙', name:'睡眠良好'},
+  {id:'h-ex',    em:'🤸', name:'做運動或健康操'},
+  {id:'h-sun',   em:'☀️', name:'曬太陽'},
+];
+function initHabits() {
+  const today = new Date().toLocaleDateString('zh-TW');
+  const saved = JSON.parse(localStorage.getItem('st_habits_'+today)||'{}');
+  const el = document.getElementById('habit-list');
+  el.innerHTML = HABITS.map(h => `
+    <div style="display:flex;align-items:center;gap:12px;padding:10px 12px;background:${saved[h.id]?'#EAFAF1':'var(--bg)'};border-radius:12px;cursor:pointer;transition:background .15s"
+      id="${h.id}" onclick="toggleHabit('${h.id}','${today}')">
+      <span style="font-size:22px">${h.em}</span>
+      <span style="font-size:15px;font-weight:600;color:${saved[h.id]?'var(--green)':'var(--text)'};flex:1">${h.name}</span>
+      <span style="font-size:20px">${saved[h.id]?'✅':'⬜'}</span>
+    </div>`).join('');
+}
+function toggleHabit(id, today) {
+  const saved = JSON.parse(localStorage.getItem('st_habits_'+today)||'{}');
+  saved[id] = !saved[id];
+  localStorage.setItem('st_habits_'+today, JSON.stringify(saved));
+  initHabits();
+  if (saved[id]) showToast('✓ 記錄完成！');
+}
+</script>
+
+<!-- ════════════════════════════════════
+     體質自測頁面
+     依據：王琦教授「中醫九種體質學說」
+     北京中醫藥大學，2009 年標準化
+════════════════════════════════════ -->
+<div id="page-constitution" class="page" style="background:var(--bg)">
+
+  <div style="background:var(--forest);padding:20px 16px 16px;position:sticky;top:0;z-index:10">
+    <div style="font-family:'Noto Serif TC',serif;font-size:22px;font-weight:900;color:#fff;letter-spacing:2px">🧬 中醫體質自測</div>
+    <div style="font-size:13px;color:rgba(255,255,255,.65);margin-top:4px">依據王琦教授九種體質學說・共 18 題</div>
+  </div>
+
+  <div style="padding:16px" id="const-quiz-area">
+
+    <!-- 說明卡 -->
+    <div id="const-saved-result" style="display:none;background:var(--cream);border:1.5px solid #D0C8B8;border-radius:14px;padding:14px 16px;margin-bottom:12px;font-size:14px;color:var(--earth)">
+  📋 <strong>上次測試結果：</strong><span id="const-saved-text"></span>
+  <button onclick="loadAndShowConst()" style="margin-left:8px;padding:3px 12px;border-radius:100px;background:var(--forest);color:#fff;border:none;font-size:12px;cursor:pointer;font-family:inherit">重新查看</button>
+</div>
+<div id="const-intro" style="background:#fff;border:1.5px solid #E0DAD0;border-radius:16px;padding:20px;margin-bottom:16px">
+      <div style="font-size:16px;font-weight:700;color:var(--forest);margin-bottom:8px">測試說明</div>
+      <div style="font-size:14px;color:var(--muted);line-height:1.9">
+        以下 18 個問題，請依照你<strong>近一個月</strong>的實際狀況回答。每題選最符合你的選項。<br><br>
+        本測試依據中醫體質學說設計，結果提供養生參考，<strong>不構成醫療診斷</strong>。如有健康疑慮，請諮詢中醫師。
+      </div>
+      <button onclick="startConst()" style="width:100%;margin-top:14px;padding:13px;background:var(--forest);color:#fff;border:none;border-radius:12px;font-size:16px;font-weight:700;cursor:pointer;font-family:inherit">開始測試 →</button>
+    </div>
+
+    <!-- 題目區（動態生成） -->
+    <div id="const-questions" style="display:none"></div>
+
+    <!-- 結果區 -->
+    <div id="const-result" style="display:none"></div>
+
+  </div>
+</div>
+
+<script>
+// ════════════════════════════════════
+//  體質自測資料
+//  依據：王琦《中醫體質學》（人民衛生出版社，2009）
+//  九種體質：平和、氣虛、陽虛、陰虛、痰濕、濕熱、血瘀、氣鬱、特稟
+//  每題對應一至多種體質傾向
+// ════════════════════════════════════
+
+// 18 題，每題記分對應體質
+// score 格式：{體質代碼: 分數權重}
+// 選項：從不(0) / 很少(1) / 有時(2) / 經常(3) / 總是(4)
+const CONST_QS = [
+  {
+    id:1,
+    q:'你容易感覺疲倦、氣力不足，稍微活動就覺得累？',
+    scores:{'qx':4,'hx':1}
+  },
+  {
+    id:2,
+    q:'你的說話聲音小，容易上氣不接下氣？',
+    scores:{'qx':4}
+  },
+  {
+    id:3,
+    q:'你怕冷，手腳冰涼，比身邊的人更容易覺得冷？',
+    scores:{'yx':4,'qx':1}
+  },
+  {
+    id:4,
+    q:'即使天氣不熱，你也常常手腳心發熱，或者下午兩頰偏紅？',
+    scores:{'yx2':4}  // 陰虛
+  },
+  {
+    id:5,
+    q:'你皮膚或眼睛容易乾燥，口乾舌燥，喜歡喝冷水？',
+    scores:{'yx2':4,'sh':1}
+  },
+  {
+    id:6,
+    q:'你身形偏胖，腹部鬆軟，皮膚油脂分泌多？',
+    scores:{'tm':4,'sh':1}
+  },
+  {
+    id:7,
+    q:'你容易覺得身體沉重、頭腦昏沉，喉嚨裡好像有痰？',
+    scores:{'tm':4}
+  },
+  {
+    id:8,
+    q:'你臉部、頭皮容易油膩，或者容易長痘痘（尤其是有膿頭的）？',
+    scores:{'sh':4,'tm':1}
+  },
+  {
+    id:9,
+    q:'你感覺口中苦或口臭，排泄物（糞便、小便）氣味偏重？',
+    scores:{'sh':4}
+  },
+  {
+    id:10,
+    q:'你有時皮膚出現暗斑、黑眼圈，或舌頭顏色偏暗、有紫色？',
+    scores:{'xy':4}
+  },
+  {
+    id:11,
+    q:'你容易忘記剛才說的事，或者身體某部分有固定疼痛（刺痛感）？',
+    scores:{'xy':3,'qx':1}
+  },
+  {
+    id:12,
+    q:'你常常感到情緒低落、悶悶不樂，或者胸口有壓迫感？',
+    scores:{'qy':4}
+  },
+  {
+    id:13,
+    q:'你容易緊張、焦慮，做事容易患得患失？',
+    scores:{'qy':4}
+  },
+  {
+    id:14,
+    q:'你容易對某些食物（蝦蟹、花粉）或氣味過敏？',
+    scores:{'tb':5}
+  },
+  {
+    id:15,
+    q:'你皮膚容易蕁麻疹、皮膚劃過後留下紅痕？',
+    scores:{'tb':4,'sh':1}
+  },
+  {
+    id:16,
+    q:'你整體精力充沛，很少感冒，睡眠好、消化好？',
+    scores:{'ph':4}  // 答「總是」代表平和體質傾向強
+  },
+  {
+    id:17,
+    q:'你適應能力強，不太受天氣冷熱、環境變化影響？',
+    scores:{'ph':4}
+  },
+  {
+    id:18,
+    q:'你情緒穩定，很少感到煩惱、憂慮或心情起伏大？',
+    scores:{'ph':3,'qy':-2}
+  },
+];
+
+// 體質定義
+const CONSTITUTIONS = {
+  ph:  {
+    name:'平和體質', icon:'🌿',
+    color:'#1A6035', bg:'#EAFAF1',
+    desc:'陰陽氣血調和，是最理想的體質狀態。',
+    traits:['精力充沛，不易疲勞','很少生病，恢復快','情緒穩定，睡眠良好','消化功能好，體重穩定'],
+    solar_advice:'四季順時養生即可，無需特別大補。春生夏長、秋收冬藏，順應節氣自然調整作息。',
+    diet:'飲食均衡，五穀雜糧、蔬菜水果皆宜，不需要特別偏補。',
+    avoid:'忌暴飲暴食、熬夜，避免過度勞累打亂平衡。',
+    classic:'「陰平陽秘，精神乃治。」—《黃帝內經》'
+  },
+  qx:  {
+    name:'氣虛體質', icon:'🌾',
+    color:'#7B5A00', bg:'#FEF9E7',
+    desc:'元氣不足，以疲勞、氣短、易感冒為主要特徵。',
+    traits:['說話氣若游絲，聲音偏低','容易感冒，恢復慢','稍微運動就出汗、氣喘','消化功能弱，食慾不穩'],
+    solar_advice:'春夏養氣最佳。避免在烈日下長時間活動，注意午休。立冬後開始溫補。',
+    diet:'適合：山藥、黨參、紅棗、糯米、雞肉、黃豆。忌：生冷瓜果、油膩食物。',
+    avoid:'忌過度勞累，不宜大汗。避免空調直吹、貪涼。',
+    classic:'「邪之所湊，其氣必虛。」氣足才能抵禦外邪。—《黃帝內經》'
+  },
+  yx:  {
+    name:'陽虛體質', icon:'🔥',
+    color:'#9B2226', bg:'#FDEDEC',
+    desc:'陽氣不足，以畏寒怕冷、手足不溫為主要特徵。',
+    traits:['手腳冰涼，比別人更怕冷','喜歡熱食熱飲','容易腹瀉，大便不成形','精神不振，嗜睡'],
+    solar_advice:'冬至一陽生是最重要的節氣。小雪到大寒期間做好保暖，三九天艾灸效果最好。',
+    diet:'適合：羊肉、韭菜、核桃、薑、桂圓、荔枝。忌：西瓜、梨子、生冷飲料。',
+    avoid:'忌冷水洗頭、洗澡水太涼，忌空腹吹冷風，忌長時間待在冷氣房。',
+    classic:'「陽氣者，若天與日，失其所則折壽而不彰。」—《黃帝內經》'
+  },
+  yx2: {
+    name:'陰虛體質', icon:'💧',
+    color:'#1B4F72', bg:'#EBF5FB',
+    desc:'陰液虧少，以口燥咽乾、手足心熱為主要特徵。',
+    traits:['下午兩頰潮紅，手腳心熱','口乾，喜歡喝冷水','眼睛乾澀，容易失眠','大便乾結，皮膚偏乾'],
+    solar_advice:'秋分到霜降最需要滋陰。夏天避免過度出汗，冬天不宜過度溫補。',
+    diet:'適合：百合、銀耳、梨子、蜂蜜、黑芝麻、鴨肉、豆腐。忌：辛辣、烤炸、咖啡。',
+    avoid:'忌熬夜（陰虛者熬夜傷陰最嚴重），忌大量運動出汗，忌環境過熱過燥。',
+    classic:'「陰者，藏精而起亟也；陽者，衛外而為固也。」—《黃帝內經》'
+  },
+  tm:  {
+    name:'痰濕體質', icon:'🌊',
+    color:'#2E6DA4', bg:'#EBF5FB',
+    desc:'痰濕凝聚，以形體肥胖、腹部肥滿、口黏苔膩為主要特徵。',
+    traits:['體型偏胖，腹部肥滿鬆軟','皮膚油膩，容易出汗且黏','頭部沉重，身體沉重','口中黏膩或甜，舌苔白厚'],
+    solar_advice:'芒種到小暑是化濕最佳時機。穀雨前後注意除濕，梅雨季尤其要避免潮濕環境。',
+    diet:'適合：薏仁、茯苓、冬瓜、白蘿蔔、陳皮、蓮子。忌：甜食、油膩、酒、冷飲。',
+    avoid:'忌久坐不動，忌潮濕環境（避免淋雨、久居地下室），忌飲食過飽。',
+    classic:'「諸濕腫滿，皆屬於脾。」健脾化濕是根本。—《黃帝內經》'
+  },
+  sh:  {
+    name:'濕熱體質', icon:'🌡️',
+    color:'#7D6608', bg:'#FEF9E7',
+    desc:'濕熱內蘊，以面垢油光、易生痤瘡粉刺為主要特徵。',
+    traits:['臉部油光，容易長痘（有膿頭）','口苦口臭，大便黏膩','小便偏黃，氣味重','情緒容易急躁'],
+    solar_advice:'小滿到大暑是濕熱最旺的節氣，飲食要最清淡。芒種後注意清熱利濕。',
+    diet:'適合：綠豆、苦瓜、薏仁、冬瓜、黃瓜、蓮藕。忌：辛辣、燒烤、酒、甜食。',
+    avoid:'忌熬夜（加重濕熱），忌吃宵夜，忌在高溫潮濕環境長時間活動。',
+    classic:'「濕熱不攘，大筋緛短，小筋弛長。」濕熱傷筋骨。—《黃帝內經》'
+  },
+  xy:  {
+    name:'血瘀體質', icon:'🌹',
+    color:'#6E2B3F', bg:'#FDEDEC',
+    desc:'血行不暢，以膚色晦黯、舌質紫黯為主要特徵。',
+    traits:['皮膚偏暗，容易出現淤斑','黑眼圈明顯，嘴唇偏暗','容易健忘','女性生理期常有血塊、痛經'],
+    solar_advice:'穀雨是活血化瘀的好時機。冬至前後注意保暖促進循環。情人節（立春前後）適合做溫補活血的食療。',
+    diet:'適合：山楂、黑木耳、洋蔥、玫瑰花茶、紅糖、韭菜。忌：寒涼、冰品，忌久坐不動。',
+    avoid:'忌過度悲傷（氣滯血瘀），忌久坐、長時間不動，忌暴飲暴食。',
+    classic:'「血行脈中，氣行脈外。」氣推血行，氣暢則血暢。—《黃帝內經》'
+  },
+  qy:  {
+    name:'氣鬱體質', icon:'🌸',
+    color:'#5B2D82', bg:'#F5EEF8',
+    desc:'氣機郁滯，以神情抑鬱、憂慮脆弱為主要特徵。',
+    traits:['情緒容易低落、悶悶不樂','多愁善感，容易焦慮','胸部、脅肋部容易脹痛','嗳氣打嗝，咽喉有異物感'],
+    solar_advice:'春天是疏肝理氣的最佳時機，驚蟄到春分要多做戶外活動。忌在秋冬悶在室內。',
+    diet:'適合：玫瑰花茶、佛手柑、柑橘、薄荷、麥芽。忌：寒涼、收澀食物（如石榴、烏梅）。',
+    avoid:'忌獨處太久，忌壓力過大，忌睡前想太多。多接觸陽光、多參與社交活動。',
+    classic:'「百病皆生於氣。」氣暢則身健，氣鬱則百病叢生。—《黃帝內經》'
+  },
+  tb:  {
+    name:'特稟體質', icon:'🌻',
+    color:'#1A6035', bg:'#EAFAF1',
+    desc:'先天稟賦異常，以過敏反應為主要特徵（過敏體質）。',
+    traits:['容易對花粉、灰塵、特定食物過敏','季節交替時容易鼻炎、哮喘','皮膚容易蕁麻疹、皮膚劃痕症','對氣候、環境適應能力偏差'],
+    solar_advice:'清明前後（花粉季）要特別防護，穀雨前兩週開始預防性調養。秋季燥氣也容易誘發過敏。',
+    diet:'適合：黃芪、大棗、山藥。忌：已知過敏原，忌辛辣、腥膻（海鮮、羊肉）。',
+    avoid:'忌接觸已知過敏原，忌在花粉季節大量戶外活動，忌貿然嘗試新食物。',
+    classic:'《傷寒論》：「病有發熱惡寒者，發於陽也」—特稟體質對外界刺激反應更敏感。'
+  },
+};
+
+const OPTS = ['從不','很少','有時','經常','總是'];
+let constAnswers = {}; // {題號: 分數(0-4)}
+
+function initConstPage() {
+  const saved = loadConstResult();
+  const savedDiv = document.getElementById('const-saved-result');
+  const savedText = document.getElementById('const-saved-text');
+  if (saved && savedDiv && savedText) {
+    const con = CONSTITUTIONS[saved.main];
+    savedDiv.style.display = 'block';
+    savedText.textContent = (con ? con.name : saved.main) + '（' + saved.date + '）';
+  }
+}
+function loadAndShowConst() {
+  const saved = loadConstResult();
+  if (!saved) return;
+  document.getElementById('const-intro').style.display='none';
+  constAnswers = {}; // 清空，直接用儲存結果
+  showConstResult(saved.main, saved.secondary || [], {}, false);
+}
+function startConst() {
+  document.getElementById('const-intro').style.display='none';
+  const qa = document.getElementById('const-questions');
+  qa.style.display='block';
+  qa.innerHTML = CONST_QS.map((q,i) => `
+    <div style="background:#fff;border:1.5px solid #E0DAD0;border-radius:16px;padding:18px;margin-bottom:12px" id="cq-${q.id}">
+      <div style="font-size:13px;color:var(--muted);margin-bottom:6px;font-weight:600">第 ${i+1} 題 / 共 ${CONST_QS.length} 題</div>
+      <div style="font-size:16px;color:var(--text);line-height:1.7;margin-bottom:14px;font-weight:600">${q.q}</div>
+      <div style="display:flex;gap:6px;flex-wrap:wrap">
+        ${OPTS.map((opt,j) => `
+          <button onclick="answerConst(${q.id},${j},this)"
+            style="flex:1;min-width:60px;padding:8px 4px;border-radius:10px;border:1.5px solid #D0DAE4;
+            background:#F4F8FB;color:var(--muted);font-size:13px;font-weight:600;cursor:pointer;
+            font-family:inherit;transition:all .15s;text-align:center">
+            ${opt}
+          </button>`).join('')}
+      </div>
+    </div>`).join('') +
+    `<div id="const-submit-wrap" style="display:none;padding-bottom:20px">
+      <button onclick="calcConst()" style="width:100%;padding:15px;background:var(--forest);color:#fff;border:none;border-radius:14px;font-size:17px;font-weight:700;cursor:pointer;font-family:inherit">
+        查看我的體質結果 →
+      </button>
+    </div>`;
+}
+
+function answerConst(qid, score, btn) {
+  // 取消同題其他選項的選中狀態
+  const card = document.getElementById('cq-'+qid);
+  card.querySelectorAll('button').forEach(b => {
+    b.style.background='#F4F8FB';
+    b.style.color='var(--muted)';
+    b.style.borderColor='#D0DAE4';
+  });
+  // 選中當前
+  btn.style.background='var(--forest)';
+  btn.style.color='#fff';
+  btn.style.borderColor='var(--forest)';
+
+  constAnswers[qid] = score;
+
+  // 檢查是否全部作答
+  if(Object.keys(constAnswers).length === CONST_QS.length) {
+    document.getElementById('const-submit-wrap').style.display='block';
+    document.getElementById('const-submit-wrap').scrollIntoView({behavior:'smooth',block:'nearest'});
+  }
+}
+
+function calcConst() {
+  // 初始化各體質分數
+  const scores = {};
+  Object.keys(CONSTITUTIONS).forEach(k => { scores[k] = 0; });
+
+  // 計算
+  CONST_QS.forEach(q => {
+    const ans = constAnswers[q.id] || 0; // 0-4
+    Object.entries(q.scores).forEach(([type, weight]) => {
+      if (!scores[type]) scores[type] = 0;
+      scores[type] += ans * weight;
+    });
+  });
+
+  // 平和體質特殊處理：需要題16,17,18都高分才算
+  // 若其他體質分數偏高，平和分數降低
+  const nonPhMax = Math.max(...Object.entries(scores).filter(([k])=>k!=='ph').map(([k,v])=>v));
+  if (nonPhMax > 20) scores['ph'] = Math.max(0, scores['ph'] - nonPhMax * 0.5);
+
+  // 排序找主要體質（前三名）
+  const sorted = Object.entries(scores)
+    .filter(([k])=>k!=='ph'||scores['ph']>15)
+    .sort((a,b)=>b[1]-a[1]);
+
+  const main = sorted[0];
+  const secondary = sorted.slice(1,3).filter(([k,v])=>v > main[1]*0.5);
+
+  // 如果最高分是平和且分數足夠
+  const isPingHe = main[0]==='ph' && main[1] > 15;
+
+  showConstResult(main[0], secondary.map(([k])=>k), scores, isPingHe);
+}
+
+function showConstResult(mainKey, secondaryKeys, allScores, isPingHe) {
+  const qa = document.getElementById('const-questions');
+  qa.style.display='none';
+
+  const main = CONSTITUTIONS[mainKey] || CONSTITUTIONS['ph'];
+  const res  = document.getElementById('const-result');
+  res.style.display='block';
+
+  const secondaryHTML = secondaryKeys.map(k => {
+    const c = CONSTITUTIONS[k];
+    if(!c) return '';
+    return `
+    <div style="background:${c.bg};border:1.5px solid;border-color:${c.color}33;border-radius:14px;padding:14px;margin-top:10px">
+      <div style="font-size:14px;font-weight:700;color:${c.color};margin-bottom:4px">${c.icon} 兼夾：${c.name}</div>
+      <div style="font-size:13px;color:var(--muted);line-height:1.7">${c.desc}</div>
+    </div>`;
+  }).join('');
+
+  res.innerHTML = `
+  <div style="background:${main.bg};border:2px solid;border-color:${main.color}55;border-radius:20px;padding:24px;margin-bottom:14px">
+    <div style="font-size:11px;font-weight:700;letter-spacing:3px;color:${main.color};text-transform:uppercase;margin-bottom:10px">你的主要體質</div>
+    <div style="font-size:36px;margin-bottom:8px">${main.icon}</div>
+    <div style="font-family:'Noto Serif TC',serif;font-size:28px;font-weight:900;color:${main.color};margin-bottom:8px">${main.name}</div>
+    <div style="font-size:15px;color:var(--text);line-height:1.7">${main.desc}</div>
+  </div>
+
+  ${secondaryHTML ? `<div style="margin-bottom:14px">${secondaryHTML}</div>` : ''}
+
+  <div style="background:#fff;border:1.5px solid #E0DAD0;border-radius:18px;overflow:hidden;margin-bottom:14px">
+    <div style="background:${main.color};padding:12px 18px;font-size:13px;font-weight:700;color:#fff;letter-spacing:1px">主要特徵</div>
+    <div style="padding:14px 18px">
+      ${main.traits.map(t=>`
+        <div style="display:flex;gap:10px;padding:8px 0;border-bottom:1px solid #F0EAE0;font-size:14px;color:var(--text);line-height:1.6">
+          <span style="color:${main.color};flex-shrink:0;font-weight:700">▸</span>${t}
+        </div>`).join('')}
+    </div>
+  </div>
+
+  <div style="background:#fff;border:1.5px solid #E0DAD0;border-radius:18px;overflow:hidden;margin-bottom:14px">
+    <div style="background:var(--forest);padding:12px 18px;font-size:13px;font-weight:700;color:#fff;letter-spacing:1px">節氣養生建議</div>
+    <div style="padding:16px 18px;font-size:14px;color:var(--text);line-height:1.9">${main.solar_advice}</div>
+  </div>
+
+  <div style="background:#fff;border:1.5px solid #E0DAD0;border-radius:18px;overflow:hidden;margin-bottom:14px">
+    <div style="background:#5D6D7E;padding:12px 18px;font-size:13px;font-weight:700;color:#fff;letter-spacing:1px">飲食建議</div>
+    <div style="padding:14px 18px;font-size:14px;color:var(--text);line-height:1.9">${main.diet}</div>
+  </div>
+
+  <div style="background:#fff;border:1.5px solid #E0DAD0;border-radius:18px;overflow:hidden;margin-bottom:14px">
+    <div style="background:#C0392B;padding:12px 18px;font-size:13px;font-weight:700;color:#fff;letter-spacing:1px">需要避免</div>
+    <div style="padding:14px 18px;font-size:14px;color:var(--text);line-height:1.9">${main.avoid}</div>
+  </div>
+
+  <div style="background:#F5EEE4;border-radius:16px;padding:16px 18px;margin-bottom:14px">
+    <div style="font-family:'Noto Serif TC',serif;font-size:14px;color:var(--earth);line-height:1.9;font-style:italic">${main.classic}</div>
+  </div>
+
+  <div style="background:#FEF9E7;border:1.5px solid #F5CBA7;border-radius:14px;padding:14px 16px;margin-bottom:14px;font-size:12px;color:#7B5A00;line-height:1.8">
+    ⚠️ 本測試結果為中醫養生參考，不構成醫療診斷。若有健康問題，請諮詢合格中醫師。<br>
+    依據：王琦《中醫體質學》（北京中醫藥大學，2009）
+  </div>
+
+  <button onclick="resetConst()" style="width:100%;padding:13px;background:none;border:1.5px solid #D0DAE4;border-radius:14px;font-size:15px;color:var(--muted);cursor:pointer;font-family:inherit">
+    ↩ 重新測試
+  </button>`;
+
+  saveConstResult(mainKey, secondaryKeys);
+  res.scrollIntoView({behavior:'smooth',block:'start'});
+}
+
+
+// 儲存體質測試結果到 localStorage
+function saveConstResult(mainKey, secondaryKeys) {
+  const result = {
+    date: new Date().toLocaleDateString('zh-TW'),
+    main: mainKey,
+    secondary: secondaryKeys,
+    timestamp: Date.now()
+  };
+  localStorage.setItem('st_constitution', JSON.stringify(result));
+}
+
+// 讀取上次結果
+function loadConstResult() {
+  try {
+    const saved = localStorage.getItem('st_constitution');
+    if (!saved) return null;
+    return JSON.parse(saved);
+  } catch(e) { return null; }
+}
+
+function resetConst() {
+  constAnswers = {};
+  document.getElementById('const-questions').style.display='none';
+  document.getElementById('const-result').style.display='none';
+  document.getElementById('const-intro').style.display='block';
+  document.getElementById('const-quiz-area').scrollIntoView({behavior:'smooth',block:'start'});
+}
+</script>
+</body>
+</html>
