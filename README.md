@@ -23,7 +23,6 @@
 
 ## 📂 專案結構
 
-```text
 solar-terms-health/
 ├── index.html          # 主頁面 (SEO 與結構化資料)
 ├── manifest.json       # PWA 應用程式設定檔
