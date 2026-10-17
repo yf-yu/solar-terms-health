@@ -15,6 +15,7 @@ const SW_CORE_FILES = [
   './js/journal-ux.js',
   './js/pwa-update.js',
   './js/tools.js',
+  './js/wellness-integration.js',
   './js/constitution.js',
   './icons/web-app-manifest-192x192.png',
   './icons/web-app-manifest-512x512.png',
