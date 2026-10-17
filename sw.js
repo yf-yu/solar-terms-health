@@ -17,6 +17,7 @@ const SW_CORE_FILES = [
   './js/tools.js',
   './js/constitution.js',
   './js/wellness-integration.js',
+  './js/data-protection.js',
   './icons/web-app-manifest-192x192.png',
   './icons/web-app-manifest-512x512.png',
   './icons/apple-touch-icon.png',
