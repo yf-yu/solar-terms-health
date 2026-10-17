@@ -1,6 +1,6 @@
 /* 節氣養生 — Service Worker */
 
-const CACHE = 'solar-v2';
+const CACHE = 'solar-v3'; // ★ 如果你之前用過 v2，請改成 v3，強制瀏覽器更新
 const ASSETS = [
   './',
   './index.html',
@@ -10,10 +10,11 @@ const ASSETS = [
   './js/app.js',
   './js/tools.js',
   './js/constitution.js',
-  './icons/icon-192.png',
-  './icons/icon-512.png',
+  './icons/web-app-manifest-192x192.png', 
+  './icons/web-app-manifest-512x512.png', 
   './icons/apple-touch-icon.png',
   './icons/favicon.svg',
+  './icons/og-1200x630.png',
   'https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@400;700;900&family=Noto+Sans+TC:wght@300;400;500;700&display=swap'
 ];
 
