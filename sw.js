@@ -1,7 +1,7 @@
 
 'use strict';
 
-const SW_VERSION = 'v3.4.0';
+const SW_VERSION = 'v3.4.1';
 const SW_CACHE_PREFIX = 'solar-terms-health-';
 const SW_CACHE = SW_CACHE_PREFIX + SW_VERSION;
 
@@ -15,8 +15,8 @@ const SW_CORE_FILES = [
   './js/journal-ux.js',
   './js/pwa-update.js',
   './js/tools.js',
-  './js/wellness-integration.js',
   './js/constitution.js',
+  './js/wellness-integration.js',
   './icons/web-app-manifest-192x192.png',
   './icons/web-app-manifest-512x512.png',
   './icons/apple-touch-icon.png',
