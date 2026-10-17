@@ -3,6 +3,21 @@
    節氣計算、主頁、知識庫、日誌、導覽
 ════════════════════════════════════════ */
 
+/* 將使用者輸入轉為純文字，避免日誌 HTML 注入 */
+function escapeHTML(value) {
+  return String(value ?? '').replace(/[&<>"']/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
+}
+function readLocalJSON(key, fallback) {
+  try { const value = JSON.parse(localStorage.getItem(key)); return value ?? fallback; }
+  catch { return fallback; }
+}
+function writeLocalJSON(key, value) {
+  try { localStorage.setItem(key, JSON.stringify(value)); return true; }
+  catch { showToast('儲存失敗：請檢查瀏覽器儲存空間或隱私模式'); return false; }
+}
+function localDateKey(date = new Date()) {
+  return `${date.getFullYear()}-${String(date.getMonth()+1).padStart(2,'0')}-${String(date.getDate()).padStart(2,'0')}`;
+}
 /* ── Service Worker 註冊 ── */
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => {
@@ -225,7 +240,7 @@ function openDetail(name) {
 
   document.getElementById('page-library').style.display = 'none';
   document.getElementById('solar-detail').classList.add('open');
-  history.pushState({ solar: name }, '', '#solar=' + encodeURIComponent(name));
+  if (location.hash !== '#solar=' + encodeURIComponent(name)) history.pushState({ solar: name }, '', '#solar=' + encodeURIComponent(name));
   window.scrollTo(0, 0);
 }
 
@@ -234,12 +249,13 @@ function closeDetail() {
   document.getElementById('page-library').style.display = 'flex';
   document.title = '二十四節氣知識庫｜節氣養生';
   if (location.hash.startsWith('#solar=')) {
-    history.pushState({ page: 'library' }, '', '#library');
+    history.replaceState({ page: 'library' }, '', '#library');
   }
 }
 
 /* ── 個人日誌 ── */
-let journalData = JSON.parse(localStorage.getItem('st_journal') || '[]');
+let journalData = readLocalJSON('st_journal', []);
+if (!Array.isArray(journalData)) journalData = [];
 
 function saveJournal() {
   const now = new Date();
@@ -255,24 +271,21 @@ function saveJournal() {
 
   const entry = {
     id: Date.now(),
-    date: now.toLocaleDateString('zh-TW'),
+    date: localDateKey(now),
     solar: term.name,
     checks, symptoms, note,
   };
 
   // 同日去重：同一天只保留一筆（更新）
-  const today = now.toLocaleDateString('zh-TW');
+  const today = localDateKey(now);
   const idx = journalData.findIndex(e => e.date === today);
   if (idx >= 0) journalData[idx] = entry;
   else journalData.unshift(entry);
 
   if (journalData.length > 100) journalData = journalData.slice(0, 100);
-  localStorage.setItem('st_journal', JSON.stringify(journalData));
+  if (!writeLocalJSON('st_journal', journalData)) return;
 
-  ['chk-water','chk-veg','chk-sleep','chk-exercise'].forEach(id =>
-    document.getElementById(id).classList.remove('on'));
-  document.querySelectorAll('.symptom-chip').forEach(c => c.classList.remove('sel'));
-  document.getElementById('journal-note').value = '';
+  // 保留當日輸入狀態，避免使用者誤以為儲存後資料消失。
 
   renderJournal();
   showToast('✓ 今日記錄已儲存');
@@ -290,16 +303,16 @@ function renderJournal() {
 
   const checkLabels = { water:'喝水✓', veg:'蔬菜✓', sleep:'睡眠✓', exercise:'運動✓' };
   el.innerHTML = journalData.slice(0, 20).map(e => {
-    const doneCks = Object.entries(e.checks)
+    const doneCks = Object.entries(e.checks || {})
       .filter(([,v]) => v)
-      .map(([k]) => `<span class="entry-check">${checkLabels[k]}</span>`).join('');
+      .map(([k]) => `<span class="entry-check">${escapeHTML(checkLabels[k] || k)}</span>`).join('');
     return `
     <div class="journal-entry">
-      <div class="entry-date">${e.date}</div>
-      <div class="entry-solar">📅 ${e.solar}</div>
+      <div class="entry-date">${escapeHTML(e.date)}</div>
+      <div class="entry-solar">📅 ${escapeHTML(e.solar)}</div>
       ${doneCks ? `<div class="entry-checks">${doneCks}</div>` : ''}
-      ${e.symptoms.length ? `<div class="entry-symptoms">身體感覺：${e.symptoms.join('・')}</div>` : ''}
-      ${e.note ? `<div class="entry-note">${e.note}</div>` : ''}
+      ${e.symptoms.length ? `<div class="entry-symptoms">身體感覺：${escapeHTML((e.symptoms || []).join('・'))}</div>` : ''}
+      ${e.note ? `<div class="entry-note">${escapeHTML(e.note)}</div>` : ''}
     </div>`;
   }).join('');
 }
@@ -313,7 +326,7 @@ const PAGE_TITLES = {
   tools: '提醒工具｜節氣養生'
 };
 
-function switchPage(which, navEl) {
+function switchPage(which, navEl, fromHistory = false) {
   document.getElementById('solar-detail').classList.remove('open');
   document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
   document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
@@ -321,7 +334,7 @@ function switchPage(which, navEl) {
   if (pageEl) pageEl.classList.add('active');
   if (navEl) navEl.classList.add('active');
   document.title = PAGE_TITLES[which] || '節氣養生';
-  history.replaceState({ page: which }, '', '#' + which);
+  if (!fromHistory && location.hash !== '#' + which) history.pushState({ page: which }, '', '#' + which);
 
   if (which === 'home') initHome();
   if (which === 'library') initLibrary();
@@ -367,8 +380,11 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 /* ── 歷史返回鍵 ── */
-window.addEventListener('popstate', (e) => {
-  if (e.state?.solar) openDetail(e.state.solar);
-  else if (e.state?.page) switchPage(e.state.page, document.querySelector(`.nav-item[data-page="${e.state.page}"]`));
-  else closeDetail();
+window.addEventListener('popstate', () => {
+  const hash = location.hash.slice(1);
+  const page = hash.startsWith('solar=') ? 'library' : (PAGE_TITLES[hash] ? hash : 'home');
+  switchPage(page, document.querySelector(`.nav-item[data-page="${page}"]`), true);
+  if (hash.startsWith('solar=')) {
+    try { openDetail(decodeURIComponent(hash.slice(6))); } catch { /* 無效網址 */ }
+  }
 });

@@ -22,10 +22,11 @@ function loadAndShowConst() {
   if (!saved) return;
   document.getElementById('const-intro').style.display = 'none';
   constAnswers = {};
-  showConstResult(saved.main, saved.secondary || []);
+  showConstResult(saved.main, saved.secondary || [], false);
 }
 
 function startConst() {
+  constAnswers = {};
   document.getElementById('const-intro').style.display = 'none';
   document.getElementById('const-result').style.display = 'none';
   const qa = document.getElementById('const-questions');
@@ -59,6 +60,7 @@ function answerConst(qid, score, btn) {
 }
 
 function calcConst() {
+  if (Object.keys(constAnswers).length !== window.CONST_QS.length) { showToast('請先完成所有題目'); return; }
   const scores = {};
   Object.keys(window.CONSTITUTIONS).forEach(k => { scores[k] = 0; });
 
@@ -84,7 +86,7 @@ function calcConst() {
   showConstResult(main[0], secondary.map(([k]) => k));
 }
 
-function showConstResult(mainKey, secondaryKeys) {
+function showConstResult(mainKey, secondaryKeys, shouldSave = true) {
   document.getElementById('const-questions').style.display = 'none';
   const main = window.CONSTITUTIONS[mainKey] || window.CONSTITUTIONS['ph'];
   const res = document.getElementById('const-result');
@@ -136,7 +138,7 @@ function showConstResult(mainKey, secondaryKeys) {
   </div>
   <button class="const-reset-btn" onclick="resetConst()">↩ 重新測試</button>`;
 
-  saveConstResult(mainKey, secondaryKeys);
+  if (shouldSave) saveConstResult(mainKey, secondaryKeys);
   res.scrollIntoView({ behavior: 'smooth', block: 'start' });
 }
 
@@ -147,7 +149,7 @@ function saveConstResult(mainKey, secondaryKeys) {
     secondary: secondaryKeys,
     timestamp: Date.now()
   };
-  localStorage.setItem('st_constitution', JSON.stringify(result));
+  writeLocalJSON('st_constitution', result);
 }
 
 function loadConstResult() {

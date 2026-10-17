@@ -84,23 +84,23 @@ function stopTimer() {
 /* ── 今日習慣打勾 ── */
 function initHabits() {
   if (!window.HABITS) return;
-  const today = new Date().toLocaleDateString('zh-TW');
-  const saved = JSON.parse(localStorage.getItem('st_habits_' + today) || '{}');
+  const today = localDateKey();
+  const saved = readLocalJSON('st_habits_' + today, {});
   const el = document.getElementById('habit-list');
   if (!el) return;
   el.innerHTML = window.HABITS.map(h => `
-    <div class="habit-row ${saved[h.id] ? 'done' : ''}"
+    <button type="button" class="habit-row ${saved[h.id] ? 'done' : ''}" aria-pressed="${!!saved[h.id]}"
       onclick="toggleHabit('${h.id}','${today}')">
       <span class="habit-emoji">${h.em}</span>
       <span class="habit-name">${h.name}</span>
       <span class="habit-check">${saved[h.id] ? '✅' : '⬜'}</span>
-    </div>`).join('');
+    </button>`).join('');
 }
 
 function toggleHabit(id, today) {
-  const saved = JSON.parse(localStorage.getItem('st_habits_' + today) || '{}');
+  const saved = readLocalJSON('st_habits_' + today, {});
   saved[id] = !saved[id];
-  localStorage.setItem('st_habits_' + today, JSON.stringify(saved));
+  if (!writeLocalJSON('st_habits_' + today, saved)) return;
   initHabits();
   if (saved[id]) showToast('✓ 記錄完成！');
 }
